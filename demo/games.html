@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Game Landing Pages</title>
+  <style>
+    /* The page only simulates the ZON frame. Game colours come from the components'
+       `category` attribute (frame tokens --z-ds-color-games-*), not from here. */
+    :root { color-scheme: light; }
+    /* The ZON frame's dark-mode class, toggled by <zon-game-navigation>'s theme button. */
+    html.color-scheme-dark {
+      color-scheme: dark;
+      --z-ds-color-text-100: #eee;
+      --z-ds-color-text-70: #ccc;
+      --z-ds-color-text-55: #aaa;
+      --z-ds-color-background-0: #1a1a1a;
+      --z-ds-color-background-10: #2a2a2a;
+      --z-ds-color-background-modal: #222;
+      --z-ds-color-border-70: #444;
+      --z-ds-color-border-100: #555;
+      --z-ds-color-general-black-100: #fff;
+      --z-ds-color-general-white-100: #000;
+      --zon-hero-bg: #222;
+      --zon-hero-border: #444;
+    }
+    [hidden] { display: none !important; }
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: var(--z-ds-color-background-0, #fff);
+      color: var(--z-ds-color-text-100, #252525);
+    }
+    .frame-bar {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;
+      padding: 10px 16px;
+      background: var(--z-ds-color-background-0, #fff);
+      border-bottom: 1px solid var(--z-ds-color-border-70, #e4e4e4);
+    }
+    .brand { font-weight: 800; }
+    .switch {
+      display: inline-flex; padding: 3px; gap: 2px;
+      border-radius: 999px; background: var(--z-ds-color-background-10, #eee);
+    }
+    .switch a {
+      padding: 6px 14px; border-radius: 999px; text-decoration: none; color: inherit; font-weight: 600; font-size: 14px;
+    }
+    .switch a[aria-current='page'] {
+      background: var(--z-ds-color-background-0, #fff);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .15);
+    }
+    .switch a:focus-visible, .theme:focus-visible { outline: 2px solid #005fcc; outline-offset: 2px; }
+    .theme { font: inherit; font-size: 14px; background: none; color: inherit; border: 1px solid #999; border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+    /* Same content width as sudoku.zeit.de (--app-width: 888px). */
+    main { max-width: 888px; margin: 0 auto; padding: 24px 16px 48px; display: grid; gap: 40px; }
+
+    zon-game-hero:not(:defined) { display: block; min-height: 420px; }
+    zon-puzzle-list:not(:defined) { display: block; min-height: 220px; }
+
+    /* Fake game view */
+    .game { display: grid; gap: 24px; justify-items: center; }
+    #game { gap: 16px; padding-top: 8px; }
+    .game-meta { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 12px; color: var(--z-ds-color-text-55, #69696c); }
+    .more-links { display: grid; gap: 8px; }
+    .more-links button { font: inherit; text-align: left; padding: 12px; border-radius: 8px; border: 1px solid var(--z-ds-color-border-70, #e4e4e4); background: none; color: inherit; cursor: pointer; }
+    .board { width: min(100%, 360px); aspect-ratio: 1; display: grid; }
+    .board[data-game='sudoku'] { grid-template-columns: repeat(9, 1fr); border: 3px solid currentColor; }
+    .board[data-game='sudoku'] span { border: 1px solid #999; display: grid; place-items: center; font-weight: 700; }
+    .board[data-game='sudoku'] span:nth-child(3n):not(:nth-child(9n)) { border-right: 2px solid currentColor; }
+    .board[data-game='sudoku'] span:nth-child(n+19):nth-child(-n+27),
+    .board[data-game='sudoku'] span:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid currentColor; }
+    .board[data-game='wortgeflecht'] { grid-template-columns: repeat(6, 1fr); gap: 6px; aspect-ratio: 6 / 8; width: min(100%, 300px); }
+    .board[data-game='wortgeflecht'] span {
+      display: grid; place-items: center; border-radius: 50%; aspect-ratio: 1;
+      font-weight: 700; font-size: 20px; text-transform: uppercase;
+    }
+    .board[data-game='wortgeflecht'] span.found { background: #d6d5f4; color: #252525; }
+    .solve { font: inherit; font-weight: 700; padding: 12px 24px; border: 0; border-radius: 8px; background: #000; color: #fff; cursor: pointer; }
+    .toast {
+      position: fixed; left: 50%; bottom: 16px; translate: -50% 0; max-width: calc(100% - 32px);
+      background: #252525; color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 14px;
+    }
+  </style>
+  <script type="module" src="../src/index.js"></script>
+</head>
+<body>
+  <div class="frame-bar">
+    <span class="brand">ZEIT ONLINE · Spiele</span>
+    <nav class="switch" aria-label="Spiel wählen">
+      <a href="?game=sudoku" data-game="sudoku">Sudoku</a>
+      <a href="?game=wortgeflecht" data-game="wortgeflecht">Wortgeflecht</a>
+    </nav>
+    <button class="theme" id="theme" type="button">Dark mode</button>
+  </div>
+
+  <!-- Landing page (route "#/") -->
+  <main id="home">
+    <zon-game-hero id="hero" heading-level="1"></zon-game-hero>
+    <zon-puzzle-list id="more"></zon-puzzle-list>
+  </main>
+
+  <!-- Fake game page (route "#/<game>/YYYY-MM-DD") -->
+  <main id="game" hidden>
+    <!-- Buttons: back = link, archive/more = open dialogs by id, theme = built-in,
+         hint/print = callbacks wired in the script below. -->
+    <zon-game-navigation id="nav" back-href="#/" archive-dialog="archive" more-dialog="more-menu"></zon-game-navigation>
+    <section class="game">
+      <div class="game-meta">
+        <span id="game-date"></span>
+        <zon-game-timer id="timer" pause-when-hidden></zon-game-timer>
+      </div>
+      <div class="board" aria-label="Spielfeld (Attrappe)"></div>
+      <button class="solve" id="solve" type="button">Rätsel lösen (Demo)</button>
+    </section>
+    <zon-game-result id="result" hidden></zon-game-result>
+  </main>
+
+  <zon-game-dialog id="rules" variant="wide" label="Spielregeln">
+    <zon-game-instructions id="instructions"></zon-game-instructions>
+  </zon-game-dialog>
+
+  <zon-game-dialog id="archive" variant="drawer">
+    <h2 slot="title" id="archive-title"></h2>
+    <zon-puzzle-list id="archive-list" heading="Oktober 2026" columns="1" all-label=""></zon-puzzle-list>
+  </zon-game-dialog>
+
+  <zon-game-dialog id="more-menu" variant="drawer">
+    <h2 slot="title">Mehr</h2>
+    <div class="more-links">
+      <button type="button" id="more-rules">Spielregeln</button>
+      <button type="button" id="more-reset">Rätsel zurücksetzen</button>
+    </div>
+  </zon-game-dialog>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+<script type="module">
+  import { connectTracking, formatTime } from '../src/index.js';
+  import { GAMES } from './games-data.js';
+
+  const $ = (id) => document.getElementById(id);
+  const hero = $('hero'), more = $('more'), rules = $('rules'), instructions = $('instructions');
+  const archive = $('archive'), archiveList = $('archive-list');
+  const timer = $('timer'), result = $('result'), board = document.querySelector('.board');
+
+  // --- state ---------------------------------------------------------------
+  let game = GAMES[new URLSearchParams(location.search).get('game')] ?? GAMES.sudoku;
+  let currentDate;
+
+  const iso = (d) => d.toISOString().slice(0, 10);
+  const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return iso(d); };
+  const today = daysAgo(0);
+  const href = (date) => `#/${game.id}/${date}`; // fake routes, nothing is fetched
+
+  const progressKey = () => `zon-demo-${game.id}`;
+  const load = () => { try { return JSON.parse(sessionStorage.getItem(progressKey()) || '{}'); } catch { return {}; } };
+  let progress = load();
+  const save = () => { try { sessionStorage.setItem(progressKey(), JSON.stringify(progress)); } catch {} };
+  const statusOf = (date) => progress[date];
+  const puzzle = (n, extra = {}) => ({ date: daysAgo(n), href: href(daysAgo(n)), status: statusOf(daysAgo(n)), ...extra });
+
+  // --- tracking / toast ----------------------------------------------------
+  connectTracking({ map: (p) => ({ ...p, game: { name: game.id, episode: currentDate ?? today } }) });
+  document.addEventListener('zon-track', (e) => console.info('[dataLayer]', e.detail));
+  let toastTimer;
+  const notify = (msg) => {
+    $('toast').textContent = msg; $('toast').hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => ($('toast').hidden = true), 2500);
+  };
+
+  // --- apply the selected game to all components ---------------------------
+  function applyGame() {
+    document.title = `${game.name} · Demo`;
+    for (const a of document.querySelectorAll('.switch a')) {
+      a.toggleAttribute('aria-current', a.dataset.game === game.id);
+      if (a.dataset.game === game.id) a.setAttribute('aria-current', 'page');
+    }
+    for (const el of [hero, more, archiveList]) el.setAttribute('category', game.category);
+    hero.setAttribute('game-name', game.name);
+    // The artwork itself is the slotted element, so the component can size it.
+    hero.innerHTML = game.heroArt;
+    hero.firstElementChild.slot = 'image';
+    hero.style.setProperty('--zon-hero-art-width', game.heroArtWidth?.[0] ?? null);
+    hero.style.setProperty('--zon-hero-art-width-wide', game.heroArtWidth?.[1] ?? null);
+    more.setAttribute('heading', game.listHeading);
+    for (const list of [more, archiveList]) {
+      list.setAttribute('game-name', game.name);
+      list.icon = game.tileIcon;
+    }
+    $('archive-title').textContent = `Alle ${game.name} Rätsel`;
+    instructions.steps = game.steps;
+    nav.setAttribute('end-actions', game.nav.end);
+    nav.customActions = game.nav.custom ?? [];
+    result.setAttribute('heading', game.resultHeading);
+    renderBoard();
+  }
+
+  function renderHome() {
+    const s = statusOf(today);
+    const state = s === 'concluded' ? 'solved' : s === 'started' ? 'continue' : 'new';
+    hero.setAttribute('date', today);
+    hero.setAttribute('href', href(today));
+    hero.setAttribute('state', state);
+    hero.setAttribute('badge-label', game.hero.badge[state]);
+    hero.setAttribute('cta-label', game.hero.cta[state]);
+    more.items = [1, 2, 3, 4].map((n) => puzzle(n));
+    archiveList.items = Array.from({ length: 10 }, (_, i) => puzzle(i + 1, i > 6 ? { status: 'locked' } : {}));
+  }
+
+  function renderBoard() {
+    board.dataset.game = game.id;
+    if (game.id === 'sudoku') {
+      board.innerHTML = Array.from({ length: 81 }, (_, i) => `<span>${(i * 7) % 11 < 3 ? ((i * 5) % 9) + 1 : ''}</span>`).join('');
+    } else {
+      const letters = 'GEFLECHTWORTRAETSELSPIELZEITONLINEHERBSTLAUBKASTANIEN';
+      board.innerHTML = Array.from({ length: 48 }, (_, i) =>
+        `<span class="${[0, 1, 2, 3, 4, 5].includes(i) ? 'found' : ''}">${letters[i % letters.length]}</span>`).join('');
+    }
+  }
+
+  // --- landing page interactions -------------------------------------------
+  hero.addEventListener('zon-start', (e) => {
+    const { state } = e.detail;
+    if (state === 'new' && !sessionStorage.getItem(`${progressKey()}-rules`)) {
+      // First visit: show the rules before the first puzzle (both games do this).
+      e.preventDefault();
+      instructions.step = 0;
+      rules.show();
+    } else if (state === 'solved' && game.id === 'wortgeflecht') {
+      // Wortgeflecht's banner turns into "Weitere Rätsel" once solved and opens the archive.
+      e.preventDefault();
+      archive.show();
+    }
+  });
+  instructions.addEventListener('zon-complete', () => {
+    try { sessionStorage.setItem(`${progressKey()}-rules`, '1'); } catch {}
+    location.hash = href(today);
+  });
+  instructions.addEventListener('zon-skip', () => {
+    try { sessionStorage.setItem(`${progressKey()}-rules`, '1'); } catch {}
+    location.hash = href(today);
+  });
+
+  more.addEventListener('zon-show-all', (e) => { e.preventDefault(); archive.show(); });
+  archiveList.addEventListener('zon-puzzle-select', (e) => {
+    if (e.detail.item.status === 'locked') {
+      e.preventDefault();
+      notify('Hier würde die Paywall erscheinen (Z+).');
+      return;
+    }
+    archive.close('navigate');
+  });
+
+  // --- fake game page ------------------------------------------------------
+  function openGame(date) {
+    currentDate = date;
+    nav.setAttribute('heading', game.nav.heading);
+    nav.setDisabled('hint', false);
+    $('game-date').textContent = `${game.name} · ${new Intl.DateTimeFormat('de-DE', { weekday: 'long', day: 'numeric', month: 'short' }).format(new Date(date + 'T12:00'))}`;
+    document.querySelector('.game').hidden = false;
+    result.hidden = true;
+    timer.removeAttribute('disabled');
+    timer.reset(0);
+    timer.start();
+    if (!statusOf(date)) { progress[date] = 'started'; save(); }
+  }
+
+  $('solve').onclick = () => {
+    timer.pause();
+    timer.setAttribute('disabled', '');
+    progress[currentDate] = 'concluded'; save();
+    const time = formatTime(timer.elapsed);
+    const solved = Object.values(progress).filter((s) => s === 'concluded').length;
+    document.querySelector('.game').hidden = true;
+    result.setAttribute('share-text', `ZEIT ${game.name} ${currentDate} ✅ ${time}`);
+    if (game.id === 'sudoku') {
+      result.innerHTML = `<p slot="summary">In <strong>${time}</strong> gelöst.</p>`;
+      result.stats = [{ label: 'Zeit', value: time, record: true }, { label: 'Gelöst', value: solved }];
+    } else {
+      result.innerHTML = `<p slot="summary">Alle Themenwörter gefunden.</p>`;
+      result.stats = [{ label: 'Wörter', value: 7 }, { label: 'Hinweise', value: 0 }, { label: 'Gelöst', value: solved }];
+    }
+    result.hidden = false;
+  };
+  result.addEventListener('zon-primary', () => {
+    const next = [1, 2, 3, 4, 5, 6].map(daysAgo).find((d) => statusOf(d) !== 'concluded');
+    location.hash = next ? href(next) : '#/';
+  });
+  result.addEventListener('zon-secondary', () => openGame(currentDate));
+
+  // --- tiny router ---------------------------------------------------------
+  function route() {
+    const m = location.hash.match(/^#\/(\w+)\/(\d{4}-\d{2}-\d{2})$/);
+    const inGame = Boolean(m && m[1] === game.id);
+    $('home').hidden = inGame;
+    $('game').hidden = !inGame;
+    if (inGame) {
+      openGame(m[2]);
+      notify(`Navigation → /${game.id}/${m[2]} (Attrappe)`);
+    } else {
+      timer.pause();
+      renderHome();
+    }
+    window.scrollTo(0, 0);
+  }
+  addEventListener('hashchange', route);
+
+  // Game switch: same components, different attributes/data — no reload.
+  document.querySelector('.switch').addEventListener('click', (e) => {
+    const a = e.target.closest('a[data-game]');
+    if (!a) return;
+    e.preventDefault();
+    if (a.dataset.game === game.id) return;
+    game = GAMES[a.dataset.game];
+    progress = load();
+    currentDate = undefined;
+    history.pushState(null, '', `?game=${game.id}#/`);
+    applyGame();
+    route();
+  });
+  addEventListener('popstate', () => {
+    game = GAMES[new URLSearchParams(location.search).get('game')] ?? GAMES.sudoku;
+    progress = load();
+    applyGame();
+    route();
+  });
+
+  // Top-bar button for the landing page: same frame convention as the navigation's theme switch.
+  $('theme').onclick = () => {
+    const html = document.documentElement.classList;
+    const dark = !html.contains('color-scheme-dark');
+    html.toggle('color-scheme-dark', dark);
+    html.toggle('color-scheme-light', !dark);
+    dispatchEvent(new CustomEvent('colorscheme', { detail: dark ? 'dark' : 'light' }));
+  };
+
+  // --- in-game navigation callbacks ---------------------------------------
+  const nav = $('nav');
+  nav.handlers = {
+    // Runs before the default action; returning false would cancel it.
+    back: () => { timer.pause(); },
+    hint: ({ navigation }) => {
+      notify('Tipp eingelöst (Demo) – ein Buchstabe wird markiert.');
+      navigation.setDisabled('hint', true); // one tip per puzzle, like Wortgeflecht
+    },
+    more: () => console.info('more clicked – default action opens #more-menu'),
+  };
+  nav.addEventListener('zon-theme-change', (e) => notify(`Farbschema: ${e.detail.scheme}`));
+  $('more-rules').onclick = () => { $('more-menu').close('navigate'); instructions.step = 0; rules.show(); };
+  $('more-reset').onclick = () => { $('more-menu').close('navigate'); openGame(currentDate); notify('Rätsel zurückgesetzt'); };
+
+  applyGame();
+  route();
+</script>
+</body>
+</html>

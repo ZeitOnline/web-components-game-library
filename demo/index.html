@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZON Game Components</title>
+  <style>
+    /* Simulates what the ZON frame / @zeitonline/design-system puts on :root.
+       Components only read these variables, so the toggle proves token inheritance. */
+    :root { color-scheme: light; }
+    html.dark {
+      color-scheme: dark;
+      --z-ds-color-text-100: #eee;
+      --z-ds-color-text-70: #ccc;
+      --z-ds-color-text-55: #aaa;
+      --z-ds-color-background-0: #1a1a1a;
+      --z-ds-color-background-10: #2a2a2a;
+      --z-ds-color-background-modal: #222;
+      --z-ds-color-border-70: #444;
+      --z-ds-color-general-black-100: #fff;
+      --z-ds-color-general-white-100: #000;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: var(--z-ds-color-background-0, #fff);
+      color: var(--z-ds-color-text-100, #252525);
+    }
+    main { max-width: 720px; margin: 0 auto; padding: 16px; }
+    section { border-top: 1px solid var(--z-ds-color-border-70, #e4e4e4); padding-block: 16px; }
+    h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: var(--z-ds-color-text-55, #69696c); }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    button.demo { padding: 8px 12px; border-radius: 8px; border: 1px solid #999; background: none; color: inherit; font: inherit; cursor: pointer; }
+    pre { font-size: 12px; max-height: 200px; overflow: auto; background: var(--z-ds-color-background-10, #eee); padding: 8px; border-radius: 8px; white-space: pre-wrap; }
+    /* Reserve space before upgrade to avoid layout shift. */
+    zon-game-timer:not(:defined) { display: inline-block; width: 96px; height: 40px; }
+  </style>
+  <script type="module" src="../src/index.js"></script>
+</head>
+<body>
+<main>
+  <div class="row" style="justify-content: space-between">
+    <h1 style="font-size: 20px">ZON Game Components</h1>
+    <a href="games.html">Sudoku / Wortgeflecht-Demo →</a>
+    <button class="demo" id="theme">Dark mode umschalten</button>
+  </div>
+
+  <section>
+    <h2>zon-game-timer</h2>
+    <div class="row">
+      <zon-game-timer id="timer" autostart pause-when-hidden></zon-game-timer>
+      <button class="demo" data-timer="reset">Reset</button>
+      <button class="demo" data-timer="disable">disabled umschalten</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>zon-game-dialog + zon-game-instructions</h2>
+    <div class="row">
+      <button class="demo" id="open-rules">So wird gespielt</button>
+      <button class="demo" id="open-drawer">Mehr (drawer)</button>
+      <button class="demo" id="open-paywall">Paywall (persistent)</button>
+    </div>
+
+    <zon-game-dialog id="rules" variant="wide" label="Spielregeln">
+      <zon-game-instructions>
+        <script type="application/json">
+          [
+            { "title": "Ziel des Spiels", "description": "Füllen Sie das Raster so, dass jede Zeile, Spalte und jedes Feld die Zahlen <strong>1 bis 9</strong> genau einmal enthält.",
+              "svg": "<svg viewBox='0 0 90 90' width='180'><rect x='1' y='1' width='88' height='88' fill='none' stroke='currentColor' stroke-width='2'/><path d='M31 1v88M61 1v88M1 31h88M1 61h88' stroke='currentColor'/></svg>" },
+            { "title": "Notizen", "description": "Mit dem Stift-Symbol können Sie Kandidaten notieren." },
+            { "title": "Tipps", "description": "Wenn Sie nicht weiterkommen, hilft ein Tipp.", "descriptionTwo": "Tipps beeinflussen Ihre Statistik nicht." }
+          ]
+        </script>
+      </zon-game-instructions>
+    </zon-game-dialog>
+
+    <zon-game-dialog id="drawer" variant="drawer">
+      <h2 slot="title">Mehr</h2>
+      <p>Game-spezifischer Inhalt, z. B. die Spieleliste aus <code>more-screen</code>.</p>
+      <button slot="footer" class="demo">Spielregeln</button>
+    </zon-game-dialog>
+
+    <zon-game-dialog id="paywall" variant="fullscreen" persistent closable>
+      <h2 slot="title">Weiterspielen mit Z+</h2>
+      <p>Esc und Klick auf den Hintergrund schließen nicht.</p>
+    </zon-game-dialog>
+  </section>
+
+  <section>
+    <h2>zon-game-result</h2>
+    <zon-game-result id="result" share-text="Sudoku 6.10. ✅ 04:12">
+      <p slot="summary">In <strong>04:12</strong> gelöst – schneller als 72 % der Spieler:innen.</p>
+      <p>Slot für game-spezifische Widgets (Highscore, Voucher, Teaser …)</p>
+    </zon-game-result>
+  </section>
+
+  <section>
+    <h2>Events</h2>
+    <pre id="log"></pre>
+  </section>
+</main>
+
+<script type="module">
+  import { connectTracking } from '../src/index.js';
+
+  connectTracking({ game: { name: 'sudoku', episode: '2026-10-06', difficulty: 'mittel' } });
+
+  const log = document.getElementById('log');
+  const events = ['zon-open', 'zon-close', 'zon-step-change', 'zon-complete', 'zon-skip',
+    'zon-timer-start', 'zon-timer-pause', 'zon-primary', 'zon-secondary', 'zon-share', 'zon-track'];
+  for (const type of events) {
+    document.addEventListener(type, (e) => {
+      log.textContent = `${type} ${JSON.stringify(e.detail)}\n` + log.textContent;
+    });
+  }
+
+  document.getElementById('theme').onclick = () => document.documentElement.classList.toggle('dark');
+  document.getElementById('open-rules').onclick = () => {
+    document.querySelector('zon-game-instructions').step = 0;
+    document.getElementById('rules').show();
+  };
+  document.getElementById('open-drawer').onclick = () => document.getElementById('drawer').show();
+  document.getElementById('open-paywall').onclick = () => document.getElementById('paywall').show();
+
+  const timer = document.getElementById('timer');
+  document.querySelector('[data-timer=reset]').onclick = () => timer.reset();
+  document.querySelector('[data-timer=disable]').onclick = () => timer.toggleAttribute('disabled');
+
+  // Complex data goes in as properties, exactly like Angular [stats] or Svelte stats={…}.
+  document.getElementById('result').stats = [
+    { label: 'Zeit', value: '04:12', record: true },
+    { label: 'Gelöst', value: 37 },
+    { label: 'Serie', value: '5 Tage' },
+  ];
+</script>
+</body>
+</html>

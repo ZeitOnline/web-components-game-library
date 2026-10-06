@@ -1,0 +1,59 @@
+{
+  "name": "@zeitonline/game-components",
+  "version": "0.1.0",
+  "description": "Framework-agnostic web components shared by ZEIT ONLINE games (Angular & SvelteKit).",
+  "type": "module",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./dialog": {
+      "types": "./src/index.d.ts",
+      "default": "./src/components/zon-game-dialog.js"
+    },
+    "./instructions": {
+      "types": "./src/index.d.ts",
+      "default": "./src/components/zon-game-instructions.js"
+    },
+    "./timer": {
+      "types": "./src/index.d.ts",
+      "default": "./src/components/zon-game-timer.js"
+    },
+    "./result": {
+      "types": "./src/index.d.ts",
+      "default": "./src/components/zon-game-result.js"
+    },
+    "./hero": {
+      "types": "./src/index.d.ts",
+      "default": "./src/components/zon-game-hero.js"
+    },
+    "./puzzle-list": {
+      "types": "./src/index.d.ts",
+      "default": "./src/components/zon-puzzle-list.js"
+    },
+    "./tracking": {
+      "types": "./src/index.d.ts",
+      "default": "./src/tracking.js"
+    },
+    "./navigation": {
+      "types": "./src/index.d.ts",
+      "default": "./src/components/zon-game-navigation.js"
+    }
+  },
+  "files": [
+    "src"
+  ],
+  "sideEffects": [
+    "./src/components/*.js",
+    "./src/index.js"
+  ],
+  "scripts": {
+    "dev": "npx --yes http-server -c-1 -p 5173 -o /demo/ ."
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "types": "src/index.d.ts"
+}
