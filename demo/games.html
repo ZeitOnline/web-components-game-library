@@ -55,8 +55,7 @@
     /* Same content width as sudoku.zeit.de (--app-width: 888px). */
     main { max-width: 888px; margin: 0 auto; padding: 24px 16px 48px; display: grid; gap: 40px; }
 
-    zon-game-hero:not(:defined) { display: block; min-height: 420px; }
-    zon-puzzle-list:not(:defined) { display: block; min-height: 220px; }
+    /* Before the components are defined, the skeletons inside them (critical.css) hold the space. */
 
     /* Fake game view */
     .game { display: grid; gap: 24px; justify-items: center; }
@@ -82,7 +81,8 @@
       background: #252525; color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 14px;
     }
   </style>
-  <script type="module" src="../src/index.js"></script>
+  <!-- Skeletons + FAQ styles: must be in <head>, before any JS. -->
+  <link rel="stylesheet" href="../src/critical.css">
 </head>
 <body>
   <div class="frame-bar">
@@ -96,8 +96,38 @@
 
   <!-- Landing page (route "#/") -->
   <main id="home">
-    <zon-game-hero id="hero" heading-level="1"></zon-game-hero>
-    <zon-puzzle-list id="more"></zon-puzzle-list>
+    <!-- The skeletons inside the tags show until the elements are defined (?delay=2000 to see them). -->
+    <zon-game-hero id="hero" heading-level="1">
+      <div class="zon-skeleton zon-skeleton--hero" aria-hidden="true">
+        <div class="zon-skeleton__card">
+          <div class="zon-skeleton__image"></div>
+          <div class="zon-skeleton__content">
+            <span class="zon-skeleton__bone zon-skeleton__badge"></span>
+            <span class="zon-skeleton__text">
+              <span class="zon-skeleton__bone zon-skeleton__title"></span>
+              <span class="zon-skeleton__bone zon-skeleton__date"></span>
+            </span>
+            <span class="zon-skeleton__bone zon-skeleton__cta"></span>
+          </div>
+        </div>
+      </div>
+    </zon-game-hero>
+    <zon-puzzle-list id="more">
+      <div class="zon-skeleton zon-skeleton--puzzle-list" aria-hidden="true">
+        <div class="zon-skeleton__head">
+          <span class="zon-skeleton__bone zon-skeleton__heading"></span>
+          <span class="zon-skeleton__bone zon-skeleton__all"></span>
+        </div>
+        <ul>
+          <li><span class="zon-skeleton__bone zon-skeleton__tile"></span><span class="zon-skeleton__lines"><span class="zon-skeleton__bone zon-skeleton__supporter"></span><span class="zon-skeleton__bone zon-skeleton__date"></span></span></li>
+          <li><span class="zon-skeleton__bone zon-skeleton__tile"></span><span class="zon-skeleton__lines"><span class="zon-skeleton__bone zon-skeleton__supporter"></span><span class="zon-skeleton__bone zon-skeleton__date"></span></span></li>
+          <li><span class="zon-skeleton__bone zon-skeleton__tile"></span><span class="zon-skeleton__lines"><span class="zon-skeleton__bone zon-skeleton__supporter"></span><span class="zon-skeleton__bone zon-skeleton__date"></span></span></li>
+          <li><span class="zon-skeleton__bone zon-skeleton__tile"></span><span class="zon-skeleton__lines"><span class="zon-skeleton__bone zon-skeleton__supporter"></span><span class="zon-skeleton__bone zon-skeleton__date"></span></span></li>
+        </ul>
+      </div>
+    </zon-puzzle-list>
+    <!-- Light DOM, rendered from GAMES[game].faq. A static page would write the <details> here directly. -->
+    <zon-game-faq id="faq" structured-data></zon-game-faq>
   </main>
 
   <!-- Fake game page (route "#/<game>/YYYY-MM-DD") -->
@@ -136,8 +166,12 @@
   <div class="toast" id="toast" role="status" hidden></div>
 
 <script type="module">
-  import { connectTracking, formatTime } from '../src/index.js';
   import { GAMES } from './games-data.js';
+
+  // ?delay=<ms> holds the components back, to show the skeletons (as on a slow connection).
+  const delay = Number(new URLSearchParams(location.search).get('delay')) || 0;
+  if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+  const { connectTracking, formatTime } = await import('../src/index.js');
 
   const $ = (id) => document.getElementById(id);
   const hero = $('hero'), more = $('more'), rules = $('rules'), instructions = $('instructions');
@@ -184,6 +218,7 @@
     hero.style.setProperty('--zon-hero-art-width', game.heroArtWidth?.[0] ?? null);
     hero.style.setProperty('--zon-hero-art-width-wide', game.heroArtWidth?.[1] ?? null);
     more.setAttribute('heading', game.listHeading);
+    $('faq').items = game.faq.map((item, i) => ({ ...item, open: i === 0 }));
     for (const list of [more, archiveList]) {
       list.setAttribute('game-name', game.name);
       list.icon = game.tileIcon;

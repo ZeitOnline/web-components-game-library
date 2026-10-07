@@ -5,5 +5,6 @@ export { ZonGameTimer, formatTime } from './components/zon-game-timer.js';
 export { ZonGameResult } from './components/zon-game-result.js';
 export { ZonGameHero } from './components/zon-game-hero.js';
 export { ZonPuzzleList } from './components/zon-puzzle-list.js';
+export { ZonGameFaq, faqStructuredData } from './components/zon-game-faq.js';
 export { ZonGameNavigation } from './components/zon-game-navigation.js';
 export { connectTracking } from './tracking.js';
