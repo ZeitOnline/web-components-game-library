@@ -34,6 +34,10 @@
       "types": "./src/index.d.ts",
       "default": "./src/components/zon-puzzle-list.js"
     },
+    "./faq": {
+      "types": "./src/index.d.ts",
+      "default": "./src/components/zon-game-faq.js"
+    },
     "./tracking": {
       "types": "./src/index.d.ts",
       "default": "./src/tracking.js"
@@ -41,14 +45,16 @@
     "./navigation": {
       "types": "./src/index.d.ts",
       "default": "./src/components/zon-game-navigation.js"
-    }
+    },
+    "./critical.css": "./src/critical.css"
   },
   "files": [
     "src"
   ],
   "sideEffects": [
     "./src/components/*.js",
-    "./src/index.js"
+    "./src/index.js",
+    "*.css"
   ],
   "scripts": {
     "dev": "npx --yes http-server -c-1 -p 5173 -o /demo/ ."

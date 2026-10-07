@@ -35,6 +35,7 @@
     /* Reserve space before upgrade to avoid layout shift. */
     zon-game-timer:not(:defined) { display: inline-block; width: 96px; height: 40px; }
   </style>
+  <link rel="stylesheet" href="../src/critical.css">
   <script type="module" src="../src/index.js"></script>
 </head>
 <body>
@@ -96,6 +97,25 @@
   </section>
 
   <section>
+    <h2>zon-game-faq (markup, light DOM)</h2>
+    <!-- Written into the HTML: crawlable and usable without JS. The component adds tracking + JSON-LD. -->
+    <zon-game-faq id="faq" exclusive structured-data>
+      <details open>
+        <summary><h3>Wie spielt man Sudoku?</h3></summary>
+        <p>Ein Sudoku-Rätsel besteht aus neun Boxen mit jeweils 3x3 Zellen. Ziel ist es, alle Zellen so mit Ziffern zwischen 1 und 9 zu füllen, dass jede Ziffer in jeder Box, Reihe und Spalte nur einmal vorkommt.</p>
+      </details>
+      <details>
+        <summary><h3>Kann ich das ZEIT Sudoku auf dem Smartphone spielen?</h3></summary>
+        <p>Ja. Unsere Sudokus sind im Browser oder in der ZEIT-App (<a href="https://play.google.com/store/apps/details?id=de.zeit.online">Android</a>, <a href="https://apps.apple.com/de/app/zeit-online/id828889166">iOS</a>) spielbar.</p>
+      </details>
+      <details>
+        <summary><h3>Wie oft erscheint das ZEIT Sudoku?</h3></summary>
+        <p>Für alle Schwierigkeitsstufen erscheint täglich ein neues Spiel.</p>
+      </details>
+    </zon-game-faq>
+  </section>
+
+  <section>
     <h2>Events</h2>
     <pre id="log"></pre>
   </section>
@@ -108,7 +128,7 @@
 
   const log = document.getElementById('log');
   const events = ['zon-open', 'zon-close', 'zon-step-change', 'zon-complete', 'zon-skip',
-    'zon-timer-start', 'zon-timer-pause', 'zon-primary', 'zon-secondary', 'zon-share', 'zon-track'];
+    'zon-timer-start', 'zon-timer-pause', 'zon-primary', 'zon-secondary', 'zon-share', 'zon-faq-toggle', 'zon-track'];
   for (const type of events) {
     document.addEventListener(type, (e) => {
       log.textContent = `${type} ${JSON.stringify(e.detail)}\n` + log.textContent;

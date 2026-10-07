@@ -16,6 +16,9 @@ export declare class ZonGameResult extends HTMLElement {
 export declare class ZonGameHero extends HTMLElement {}
 export interface PuzzleItem { date: string; href?: string; label?: string; status?: 'started' | 'concluded' | 'locked'; }
 export declare class ZonPuzzleList extends HTMLElement { items: PuzzleItem[]; icon: string; }
+export interface FaqItem { question: string; /** trusted HTML */ answer: string; open?: boolean; }
+export declare class ZonGameFaq extends HTMLElement { items: FaqItem[]; readonly structuredData: Record<string, unknown>; }
+export declare function faqStructuredData(items: FaqItem[]): Record<string, unknown>;
 export type NavAction = 'back' | 'archive' | 'theme' | 'hint' | 'more';
 export interface NavContext { action: string; event: Event; element: HTMLElement; navigation: ZonGameNavigation; }
 export interface NavCustomAction {
@@ -45,5 +48,6 @@ declare global {
     'zon-game-hero': ZonGameHero;
     'zon-puzzle-list': ZonPuzzleList;
     'zon-game-navigation': ZonGameNavigation;
+    'zon-game-faq': ZonGameFaq;
   }
 }

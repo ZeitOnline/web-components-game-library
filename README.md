@@ -65,7 +65,77 @@ import '@zeitonline/game-components/hero';
 `})
 ```
 
-Import single components (`/dialog`, `/hero`, `/navigation`, `/puzzle-list`, `/timer`, `/result`, `/instructions`, `/tracking`) to load only what the game uses. Type declarations are included.
+Import single components (`/dialog`, `/hero`, `/navigation`, `/puzzle-list`, `/faq`, `/timer`, `/result`, `/instructions`, `/tracking`) to load only what the game uses. Type declarations are included.
+
+Also load `critical.css` render-blocking in `<head>` (skeletons and FAQ styles, see below):
+
+```jsonc
+// Angular: angular.json → build options
+"styles": ["node_modules/@zeitonline/game-components/src/critical.css", "src/styles.scss"]
+```
+
+```svelte
+<!-- SvelteKit: root +layout.svelte -->
+<script>import '@zeitonline/game-components/critical.css';</script>
+```
+
+## Skeletons (no flash on load)
+
+Custom elements only render once their JavaScript has run. Until then, an empty tag takes no space: the page first shows the frame, then jumps when the hero and list appear. `critical.css` contains plain-HTML skeletons that paint immediately and have **the same size and breakpoints** as the components (checked at 375, 700 and 1000 px), so the swap doesn't move anything.
+
+Put the skeleton **inside** the component tag. Once the element is defined, the skeleton disappears by itself (the shadow root has no default slot):
+
+```html
+<zon-game-hero category="logic" …>
+  <div class="zon-skeleton zon-skeleton--hero" data-category="logic" aria-hidden="true">
+    <div class="zon-skeleton__card">
+      <div class="zon-skeleton__image"></div>
+      <div class="zon-skeleton__content">
+        <span class="zon-skeleton__bone zon-skeleton__badge"></span>
+        <span class="zon-skeleton__text">
+          <span class="zon-skeleton__bone zon-skeleton__title"></span>
+          <span class="zon-skeleton__bone zon-skeleton__date"></span>
+        </span>
+        <span class="zon-skeleton__bone zon-skeleton__cta"></span>
+      </div>
+    </div>
+  </div>
+</zon-game-hero>
+
+<zon-puzzle-list …>
+  <div class="zon-skeleton zon-skeleton--puzzle-list" data-category="logic" aria-hidden="true">
+    <div class="zon-skeleton__head">
+      <span class="zon-skeleton__bone zon-skeleton__heading"></span>
+      <span class="zon-skeleton__bone zon-skeleton__all"></span>
+    </div>
+    <ul>
+      <!-- one <li> per expected row (default 4) -->
+      <li><span class="zon-skeleton__bone zon-skeleton__tile"></span><span class="zon-skeleton__lines"><span class="zon-skeleton__bone zon-skeleton__supporter"></span><span class="zon-skeleton__bone zon-skeleton__date"></span></span></li>
+    </ul>
+  </div>
+</zon-puzzle-list>
+```
+
+- **Angular:** `<app-root>` stays empty until the app has started, so put the skeletons inside `<app-root>` in `index.html` (not in a component template). Angular replaces them with the real components when it starts.
+- **SvelteKit:** server-render the skeleton markup inside the tags; the components are imported client-only.
+- `data-category` picks the game colours like the components' `category` attribute. `--zon-skeleton-columns` mirrors `columns` on the list.
+- `zon-skeleton--faq` (one `<div class="zon-skeleton__question">` per question) is only needed when the FAQ is rendered by JavaScript.
+- Try it: `demo/games.html?delay=2000` holds the components back for 2 s.
+
+## FAQ
+
+`<zon-game-faq>` renders into the **light DOM** with native `<details>`, so the questions are in the HTML for search engines, and open/close works without JavaScript. Write the markup directly (static or server-rendered pages) or set `items` (Angular `[items]`, Svelte `items={…}`):
+
+```html
+<zon-game-faq exclusive structured-data>
+  <details open>
+    <summary><h2>Wie spielt man Sudoku?</h2></summary>
+    <p>Ein Sudoku-Rätsel besteht aus …</p>
+  </details>
+</zon-game-faq>
+```
+
+The component adds `game_faq` tracking (`open` and link `click`, like Wortgeflecht) and, with `structured-data`, the schema.org `FAQPage` JSON-LD. `faqStructuredData(items)` returns the same object, for writing it into server-rendered HTML.
 
 ### 4. After changing the library
 
@@ -91,6 +161,8 @@ npx vite dev --force
 | `<zon-game-hero>` | Landing-page start banner (badge, game name, date, CTA, illustration) |
 | `<zon-game-navigation>` | In-game header: back / archive / title / theme or hint / more, plus custom buttons with callbacks |
 | `<zon-puzzle-list>` | "Weitere … Rätsel" grid with status badges and "Alle anzeigen" |
+| `<zon-game-faq>` | FAQ accordion in the light DOM (SEO), native `<details>`, tracking, JSON-LD |
+| `critical.css` | Skeletons for hero / list / FAQ and the FAQ styles, loaded in `<head>` |
 
 The API of each component (attributes, properties, slots, events) is documented at the top of its file in `src/components/`.
 

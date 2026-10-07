@@ -1,0 +1,261 @@
+/**
+ * @zeitonline/game-components/critical.css
+ *
+ * Everything that has to look right BEFORE the JavaScript runs:
+ *
+ * 1. Skeletons for the shadow-DOM components that are visible on load
+ *    (`zon-game-hero`, `zon-puzzle-list`, `zon-game-faq`). Plain HTML + CSS, so they
+ *    paint together with the frame. They copy the components' sizes and breakpoints,
+ *    so swapping skeleton → component doesn't move the page.
+ * 2. The styles of `<zon-game-faq>`, which renders into the light DOM (SEO), so its
+ *    content can be in the HTML and styled before JS.
+ *
+ * Load it render-blocking in <head> (Angular: `styles` in angular.json; SvelteKit:
+ * import it in the root +layout.svelte).
+ *
+ * Skeleton markup: see README "Skeletons". All skeleton elements are aria-hidden;
+ * put the accessible loading text on the container if you need one.
+ */
+
+/* --- shared ---------------------------------------------------------------- */
+
+.zon-skeleton,
+zon-game-faq {
+  --_sk-bone: var(--z-ds-color-background-10, #eee);
+  --_sk-shine: var(--z-ds-color-background-0, #fff);
+  --_sk-radius: var(--z-ds-border-radius-4, 4px);
+  --_text-100: var(--z-ds-color-text-100, #252525);
+  --_text-70: var(--z-ds-color-text-70, #444);
+  --_border-70: var(--z-ds-color-border-70, #e4e4e4);
+  --_accent-100: var(--z-ds-color-accent-100, #b91109);
+  --_focus-100: var(--z-ds-color-focus-100, #005fcc);
+}
+
+.zon-skeleton {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  container-type: inline-size;
+}
+.zon-skeleton *,
+.zon-skeleton *::before,
+.zon-skeleton *::after { box-sizing: border-box; }
+
+/* Same category colours as the components (shared/styles.js). */
+.zon-skeleton, .zon-skeleton[data-category='logic'] { --_game-base: var(--z-ds-color-games-logic-base, #fccdb6); --_game-soft: var(--z-ds-color-games-logic-soft, #fae4d3); }
+.zon-skeleton[data-category='word'] { --_game-base: var(--z-ds-color-games-word-base, #d6d5f4); --_game-soft: var(--z-ds-color-games-word-soft, #e6e7f7); }
+.zon-skeleton[data-category='crossword'] { --_game-base: var(--z-ds-color-games-crossword-base, #bbdef7); --_game-soft: var(--z-ds-color-games-crossword-soft, #d9ecf9); }
+.zon-skeleton[data-category='mini'] { --_game-base: var(--z-ds-color-games-mini-base, #d5e6be); --_game-soft: var(--z-ds-color-games-mini-soft, #e6efde); }
+.zon-skeleton[data-category='quiz'] { --_game-base: var(--z-ds-color-games-quiz-base, #b3dddd); --_game-soft: var(--z-ds-color-games-quiz-soft, #d7eeed); }
+
+/* A grey placeholder bar with a slow shimmer. */
+.zon-skeleton__bone {
+  display: block;
+  border-radius: var(--_sk-radius);
+  background:
+    linear-gradient(90deg, transparent 0%, var(--_sk-shine) 50%, transparent 100%) -150% 0 / 50% 100% no-repeat,
+    var(--_sk-bone);
+  animation: zon-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes zon-skeleton-shimmer {
+  to { background-position: 250% 0, 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zon-skeleton__bone { animation: none; }
+}
+
+/*
+ * A skeleton placed INSIDE the component tag is shown until the element is defined,
+ * then hidden automatically: the shadow root has no default slot, so unslotted
+ * children don't render.
+ *   <zon-game-hero …><div class="zon-skeleton zon-skeleton--hero"></div></zon-game-hero>
+ */
+zon-game-hero:not(:defined),
+zon-puzzle-list:not(:defined) { display: block; width: 100%; }
+
+/* Dialogs are never visible on load; don't flash their content before upgrade. */
+zon-game-dialog:not(:defined) { display: none; }
+
+/* --- <zon-game-hero> -------------------------------------------------------- */
+
+.zon-skeleton--hero .zon-skeleton__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  border-radius: var(--z-ds-border-radius-8, 8px);
+  background: var(--z-ds-color-background-0, #fff);
+  box-shadow: 0 0 8px #464e5114, 0 6px 24px #464e511f;
+}
+.zon-skeleton--hero .zon-skeleton__image {
+  width: 100%;
+  aspect-ratio: 5 / 2;
+  background: var(--zon-game-color, var(--_game-base));
+}
+.zon-skeleton--hero .zon-skeleton__content {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--z-ds-space-m, 16px);
+  padding: var(--z-ds-space-l, 24px);
+  margin-top: calc(-1 * (var(--z-ds-space-l, 24px) + 15px));
+  /* The badge overlaps the image, so the content needs its own stacking level. */
+  position: relative;
+}
+.zon-skeleton--hero .zon-skeleton__badge {
+  width: 64px;
+  height: 30px;
+  margin-bottom: 4px;
+  border-radius: 15px;
+  background: var(--z-ds-color-games-yellow-base, #ffc925);
+  animation: none;
+}
+.zon-skeleton--hero .zon-skeleton__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+  gap: 6px;
+  margin-top: calc(var(--z-ds-space-l, 24px) - 15px - var(--z-ds-space-m, 16px));
+}
+.zon-skeleton--hero .zon-skeleton__title { width: 9em; max-width: 80%; height: calc(var(--z-ds-fontsize-32, 32px) * 1.2); font-size: var(--z-ds-fontsize-32, 32px); }
+.zon-skeleton--hero .zon-skeleton__date { width: 11em; max-width: 70%; height: 24px; font-size: 16px; }
+.zon-skeleton--hero .zon-skeleton__cta { width: 200px; height: 40px; }
+
+@container (min-width: 736px) {
+  .zon-skeleton--hero .zon-skeleton__card { flex-direction: row-reverse; align-items: stretch; }
+  .zon-skeleton--hero .zon-skeleton__image { aspect-ratio: 1; width: auto; flex: 0 0 50%; }
+  .zon-skeleton--hero .zon-skeleton__content { margin-top: 0; justify-content: center; }
+  .zon-skeleton--hero .zon-skeleton__badge { margin-bottom: -4px; }
+  .zon-skeleton--hero .zon-skeleton__text { gap: var(--z-ds-space-xs, 8px); margin-top: 0; }
+  .zon-skeleton--hero .zon-skeleton__title { height: calc(var(--z-ds-fontsize-34, 34px) * 1.2); }
+}
+
+/* --- <zon-puzzle-list> ------------------------------------------------------ */
+
+.zon-skeleton--puzzle-list { display: flex; flex-direction: column; gap: var(--z-ds-space-m, 16px); }
+.zon-skeleton--puzzle-list .zon-skeleton__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--z-ds-space-m, 16px);
+  height: 32px; /* "Alle anzeigen" button: 16px + 2 × 8px padding */
+}
+.zon-skeleton--puzzle-list .zon-skeleton__heading { width: 220px; max-width: 60%; height: 24px; }
+.zon-skeleton--puzzle-list .zon-skeleton__all { width: 110px; height: 16px; }
+.zon-skeleton--puzzle-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: var(--z-ds-space-m, 16px);
+  column-gap: var(--z-ds-space-xl, 32px);
+}
+@container (min-width: 736px) {
+  .zon-skeleton--puzzle-list ul { grid-template-columns: repeat(var(--zon-skeleton-columns, 2), minmax(0, 1fr)); }
+}
+.zon-skeleton--puzzle-list li { display: flex; align-items: center; gap: var(--z-ds-space-s, 12px); height: 56px; }
+.zon-skeleton--puzzle-list .zon-skeleton__tile { flex: 0 0 56px; height: 56px; background: var(--_game-soft); animation: none; }
+.zon-skeleton--puzzle-list .zon-skeleton__lines { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.zon-skeleton--puzzle-list .zon-skeleton__supporter { width: 60px; height: 14px; }
+.zon-skeleton--puzzle-list .zon-skeleton__date { width: 150px; max-width: 80%; height: 16px; }
+
+/* --- <zon-game-faq> skeleton (only needed when the FAQ is rendered by JS) ----- */
+
+.zon-skeleton--faq .zon-skeleton__question {
+  display: flex;
+  align-items: center;
+  height: calc(20px * 2 + var(--z-ds-fontsize-22, 22px) * 1.5); /* margins + one line */
+  border-bottom: 1px solid var(--_border-70);
+}
+.zon-skeleton--faq .zon-skeleton__question::before {
+  content: '';
+  display: block;
+  width: 70%;
+  height: var(--z-ds-fontsize-22, 22px);
+  border-radius: var(--_sk-radius);
+  background: var(--_sk-bone);
+}
+
+/* --- <zon-game-faq> (light DOM) ---------------------------------------------- */
+/* 1:1 port of sudoku.zeit.de `.faq` (styles.scss), on native <details>. */
+
+zon-game-faq {
+  --zon-faq-styled: 1; /* lets the component warn when this file is missing */
+  display: block;
+  width: 100%;
+  line-height: 1.5;
+  color: var(--_text-100);
+}
+zon-game-faq details {
+  border-bottom: 1px solid var(--_border-70);
+}
+zon-game-faq summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 20px 0;
+  list-style: none;
+  cursor: pointer;
+}
+zon-game-faq summary::-webkit-details-marker { display: none; }
+zon-game-faq summary:focus-visible {
+  outline: 2px solid var(--_focus-100);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+/* The question: a heading when the component renders it, else whatever the author wrote. */
+zon-game-faq .zon-faq__question,
+zon-game-faq summary > :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+  font-size: var(--z-ds-fontsize-22, 22px);
+  font-weight: 700;
+  line-height: 1.3;
+}
+zon-game-faq summary:not(:has(> :is(h1, h2, h3, h4, h5, h6, .zon-faq__question))) {
+  font-size: var(--z-ds-fontsize-22, 22px);
+  font-weight: 700;
+  line-height: 1.3;
+}
+/* Chevron, added with CSS so author-written <summary> elements get it too. */
+zon-game-faq summary::after {
+  content: '';
+  flex: 0 0 14px;
+  height: 14px;
+  background: var(--_text-70);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M13 4L7 10L1 4' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform 200ms ease-in-out;
+}
+zon-game-faq details[open] > summary::after { transform: scaleY(-1); }
+
+zon-game-faq .zon-faq__answer > :first-child { margin-top: 0; }
+zon-game-faq .zon-faq__answer,
+zon-game-faq details > :not(summary) { margin-bottom: var(--z-ds-space-m, 16px); }
+zon-game-faq details p { margin: 0 0 var(--z-ds-space-m, 16px); }
+zon-game-faq details ul { padding-left: var(--z-ds-space-m, 16px); display: flex; flex-direction: column; gap: var(--z-ds-space-xs, 8px); }
+zon-game-faq details a {
+  color: var(--_text-70);
+  text-decoration: none;
+  border-bottom: 1px solid var(--_text-70);
+}
+zon-game-faq details a:hover {
+  color: var(--_accent-100);
+  border-bottom-color: var(--_accent-100);
+}
+
+/* Open/close animation where supported; elsewhere it just toggles. */
+@supports (interpolate-size: allow-keywords) {
+  zon-game-faq details { interpolate-size: allow-keywords; }
+  zon-game-faq details::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition: block-size 200ms ease-in-out, content-visibility 200ms allow-discrete;
+  }
+  zon-game-faq details[open]::details-content { block-size: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  zon-game-faq summary::after, zon-game-faq details::details-content { transition: none; }
+}

@@ -18,7 +18,7 @@ The games run on two frameworks. Sudoku (Angular 21) and Wortiger (Angular 20) a
 | Landing banner | `home/hero/start-teaser` | copy | – | `Header` (different) |
 | "Weitere Rätsel" list | `archive-teaser` + `teaser` | copy | archive dialog | `PuzzleCard` |
 | Games carousel / cards | `zonspiele-games-carousel` | copy | `ZeitGamesSection` | `Carousel`, `GameCard` |
-| FAQ | – | – | `FAQSection` + JSON-LD | `FAQSection` (identical) |
+| FAQ | static `.faq` in `index*.html` | copy (`.faq` in `index.html`) | `FAQSection` + JSON-LD | `FAQSection` (identical) |
 | Toast / live region | – | `notifications` | `GameNotification` | – |
 
 The same `src/commons/` folder (62 files) exists in both Angular repos. Eckchen, Hashi, Um die Ecke and Adventszeit most likely carry a copy too. None of the games has i18n; all strings are hardcoded German.
@@ -109,7 +109,7 @@ connectTracking({ map: (p) => trackingService.toDataLayer(p) });
 | Topic | Effect | Mitigation |
 |---|---|---|
 | **Bundle size** | Very small: 9.9 KB gz for six components, no runtime. Lit would add about 5 KB gz shared. Stencil adds about 3–4 KB of runtime plus a loader. **Angular Elements would put the Angular runtime (~50 KB+) into the Svelte games**, and Svelte `customElement` mode would put the Svelte runtime into the Angular games, so both are ruled out. | Use per-component entry points (`/dialog`, `/timer`) so a game only ships what it uses. |
-| **SSR / first paint** | Custom elements are client-only, so Shadow DOM content appears after JS loads and runs. SvelteKit SSR outputs an empty tag. This matters for anything **visible on load** (header, timer): it risks layout shift and a flash. Dialogs and the result screen are not visible on load, so they are unaffected. | Use `:not(:defined)` placeholder sizing (shown in the demo). Load the library in `<head>` as a module. Later, use Declarative Shadow DOM for above-the-fold components; the base class already re-uses an existing shadow root. |
+| **SSR / first paint** | Custom elements are client-only, so Shadow DOM content appears after JS loads and runs. SvelteKit SSR outputs an empty tag. This matters for anything **visible on load** (header, timer): it risks layout shift and a flash. Dialogs and the result screen are not visible on load, so they are unaffected. | Skeletons in `critical.css` (plain HTML + CSS, same sizes as the components) placed inside the tags, or inside `<app-root>` in Angular. Later, use Declarative Shadow DOM for above-the-fold components; the base class already re-uses an existing shadow root. |
 | **Rendering model** | Components re-render with `innerHTML` when attributes or properties change. That is fine for low-frequency UI (dialogs, steppers, results) but **wrong for the game board** or anything updating many times per second. | Keep game boards in each framework. The timer only updates the DOM once per second (the Angular version ticked every 100 ms) and uses `performance.now()` for accuracy. |
 | **Style cost** | Each shadow root has its own style scope. Constructable stylesheets are shared, so N instances still parse each sheet only once. | – |
 | **Caching** | If every game bundles the package, there is no cache sharing across games. A shared URL (e.g. `spiele.zeit.de/components/v1/…`) would be cached across games but couples deploys and needs version pinning. | Start bundled (npm). Revisit the CDN option once more games use the components. |
@@ -122,7 +122,7 @@ connectTracking({ map: (p) => trackingService.toDataLayer(p) });
   - Customisation is limited to tokens and `::part`, which is a deliberate constraint.
   - **Slotted content is still styled by the host page.** In the demo, the page's `h2 { text-transform: uppercase }` changed the dialog title. Games must style their slotted content themselves.
 - **ARIA across the shadow boundary:** `aria-labelledby` / `aria-describedby` cannot reference IDs in a different tree. The components keep those references inside their own shadow root and offer a `label` attribute instead.
-- **SEO content (FAQ JSON-LD):** this must stay server-rendered light DOM. Keep it framework-native, or make it a light-DOM element rendered by the server.
+- **SEO content (FAQ JSON-LD):** this must stay server-rendered light DOM. `<zon-game-faq>` is therefore a light-DOM element: the server (or static HTML) writes the `<details>`, the component only adds tracking and JSON-LD.
 - **Forms:** the paywall plan picker would need form-associated custom elements (`ElementInternals`) if it is ever submitted inside a `<form>`.
 - **Typing and DX:** neither framework type-checks unknown elements.
   - Generate a `custom-elements.json` manifest and `.d.ts` files (Angular: `HTMLElementTagNameMap`; Svelte: `svelteHTML.IntrinsicElements`).
