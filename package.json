@@ -57,7 +57,9 @@
     "*.css"
   ],
   "scripts": {
-    "dev": "npx --yes http-server -c-1 -p 5173 -o /demo/ ."
+    "dev": "npm --prefix demo run dev",
+    "build:demo": "npm --prefix demo run build",
+    "preview:demo": "npm --prefix demo run preview"
   },
   "license": "UNLICENSED",
   "private": true,

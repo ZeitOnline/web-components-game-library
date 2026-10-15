@@ -13,7 +13,7 @@ export const GAMES = {
     id: 'sudoku',
     name: 'Sudoku',
     category: 'logic',
-    heroArt: '<img src="assets/sudoku-hero.png" alt="Sudoku" width="1200" height="798">',
+    heroArt: '<img src="/assets/sudoku-hero.png" alt="Sudoku" width="1200" height="798">',
     heroArtWidth: null, // live defaults: 50% / 80%
     tileIcon: "<svg width=\"36\" height=\"36\" aria-hidden=\"true\" focusable=\"false\" viewBox=\"0 0 18 18\" fill=\"none\"> <path d=\"M11 3V7H15L15 3H11Z\" fill=\"var(--Icon_Yellow, #FFD100)\"/> <path d=\"M15 2C15.5523 2 16 2.44772 16 3V15C16 15.5523 15.5523 16 15 16H3C2.44772 16 2 15.5523 2 15V3C2 2.44772 2.44772 2 3 2H15ZM11.625 11.625V14.5H14.5V11.625H11.625ZM7.625 14.5H10.375V11.625H7.625V14.5ZM3.5 14.5H6.375V11.625H3.5V14.5ZM11.625 7.625V10.375H14.5V7.625H11.625ZM3.5 10.375H6.375V7.625H3.5V10.375ZM7.625 10.375H10.375V7.625H7.625V10.375ZM11.625 6.375H14.5V3.5H11.625V6.375ZM3.5 6.375H6.375V3.5H3.5V6.375ZM7.625 6.375H10.375V3.5H7.625V6.375Z\" fill=\"var(--Text-100, #252525)\"/> </svg>",
     hero: {

@@ -4,12 +4,20 @@ Framework-agnostic web components for the UI that ZEIT ONLINE games share, used 
 
 See [docs/PLAN.md](docs/PLAN.md) for the plan, integration and trade-offs.
 
+## Docs and demo site
+
+`demo/` is a SvelteKit app: documentation for every component (playground, anatomy, API, accessibility, tracking), the guides, and the Sudoku ⇄ Wortgeflecht demo. It depends on this package via `file:..`, exactly like a game would, so edits in `src/` show up on reload.
+
 ```sh
-npm run dev   # http://localhost:5173/demo/ (all components)
-              # http://localhost:5173/demo/games.html (Sudoku ⇄ Wortgeflecht landing pages, fake routes)
+npm install --prefix demo   # once
+npm run dev                 # http://localhost:5173            components + guides
+                            # http://localhost:5173/games      Sudoku ⇄ Wortgeflecht, fake routes
+npm run build:demo          # static site in demo/build
 ```
 
-In `games.html`, `<zon-game-navigation>` only appears on the game screen. Open a puzzle, or go straight to `games.html?game=sudoku#/sudoku/2026-10-05`.
+On `/games`, `<zon-game-navigation>` only appears on the game screen. Open a puzzle, or go straight to `/games?game=sudoku#/sudoku/2026-10-05`.
+
+The docs data for each component lives in `demo/src/lib/components/<slug>.js`. When you change a component's API, update its doc comment and that file together.
 
 ## Try it locally in a game (without publishing to npm)
 
@@ -120,7 +128,7 @@ Put the skeleton **inside** the component tag. Once the element is defined, the 
 - **SvelteKit:** server-render the skeleton markup inside the tags; the components are imported client-only.
 - `data-category` picks the game colours like the components' `category` attribute. `--zon-skeleton-columns` mirrors `columns` on the list.
 - `zon-skeleton--faq` (one `<div class="zon-skeleton__question">` per question) is only needed when the FAQ is rendered by JavaScript.
-- Try it: `demo/games.html?delay=2000` holds the components back for 2 s.
+- Try it: `/games?delay=2000` on the docs site holds the components back for 2 s.
 
 ## FAQ
 
