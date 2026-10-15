@@ -1,0 +1,23 @@
+{
+  "name": "game-components-docs",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Documentation and demo site for @zeitonline/game-components (SvelteKit). Consumes the package like a game does.",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@zeitonline/game-components": "file:.."
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-static": "^3.0.10",
+    "@sveltejs/kit": "^2.70.3",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "marked": "^18.0.14",
+    "svelte": "^5.57.1",
+    "vite": "^8.3.2"
+  }
+}
