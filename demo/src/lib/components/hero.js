@@ -1,17 +1,33 @@
+import { gameById, heroArt } from '../games.js';
+
+const sudoku = heroArt(gameById('sudoku'));
+
+/** The hero skeleton from critical.css: holds the space until the element is defined. */
+const skeleton = (/** @type {string} */ category) => `<div class="zon-skeleton zon-skeleton--hero" data-category="${category}" aria-hidden="true">
+  <div class="zon-skeleton__card">
+    <div class="zon-skeleton__image"></div>
+    <div class="zon-skeleton__content">
+      <span class="zon-skeleton__bone zon-skeleton__badge"></span>
+      <span class="zon-skeleton__text">
+        <span class="zon-skeleton__bone zon-skeleton__title"></span>
+        <span class="zon-skeleton__bone zon-skeleton__date"></span>
+      </span>
+      <span class="zon-skeleton__bone zon-skeleton__cta"></span>
+    </div>
+  </div>
+</div>`;
+
 /** @type {import('./types').ComponentDef} */
 export default {
   slug: 'hero',
   tag: 'zon-game-hero',
   name: 'Hero',
   category: 'Landing page',
-  summary:
-    'Start banner of a game’s landing page: badge, game name, date, CTA and illustration. Its layout follows the container (container queries), not the viewport.',
-  replaces: ['sudoku <code>home/hero/start-teaser</code> (copied by wortiger)', 'Wortgeflecht landing banner'],
   skeleton: 'hero',
   attributes: [
     { name: 'category', type: 'enum', options: ['logic', 'word', 'crossword', 'mini', 'quiz'], default: 'logic', description: 'Picks the frame colours <code>--z-ds-color-games-&lt;category&gt;-*</code>.' },
     { name: 'state', type: 'enum', options: ['new', 'continue', 'unplayed', 'solved'], default: 'new', description: 'Default badge and CTA text.' },
-    { name: 'game-name', type: 'text', description: 'Game name, the heading.' },
+    { name: 'game-name', type: 'text', game: true, description: 'Game name, the heading.' },
     { name: 'date', type: 'text', description: 'ISO date of the puzzle, shown as “Donnerstag, 15. Okt.”.' },
     { name: 'href', type: 'text', description: 'Makes the CTA a real link (works without JS, crawlable).' },
     { name: 'cta-label', type: 'text', description: 'Overrides “Erstes Rätsel starten” / “Rätsel lösen”.' },
@@ -37,20 +53,7 @@ export default {
     { name: '--zon-hero-art-width-wide', description: 'Illustration width, wide layout (default 80%).' },
     { name: '--zon-hero-bg / --zon-hero-border', description: 'Card background and border.' },
   ],
-  a11y: [
-    { topic: 'Heading', text: 'The game name is a real heading; set heading-level to fit the page outline (1 on landing pages).' },
-    { topic: 'CTA', text: 'A real <a href> when href is set, otherwise a <button>.' },
-    { topic: 'Artwork', text: 'Decorative images need alt=""; meaningful SVGs role="img" and a label.' },
-  ],
   tracking: [{ when: 'CTA click', payload: "{ event: 'game_interaction', action: 'click', position: 'header_teaser' }" }],
-  usage: {
-    when: ['Top of a game’s landing page, for today’s puzzle.'],
-    whenNot: ['Lists of older puzzles: use the puzzle list.'],
-    faq: [
-      { q: 'Why does the layout not change at my breakpoint?', a: 'It reacts to the width of its container (wide from 736px). In a narrow column it stays narrow even on desktop. Try the container width switch in the playground.' },
-      { q: 'How do I avoid a jump on load?', a: 'Put the hero skeleton from <code>critical.css</code> inside the tag. See the Skeletons guide.' },
-    ],
-  },
   playground: {
     values: {
       category: 'logic',
@@ -62,8 +65,15 @@ export default {
       'badge-label': '',
       'magazine-label': '',
       'heading-level': '2',
+      // Art widths for logos (set by the game preset); not an attribute control.
+      style: sudoku.style,
     },
-    html: '<img slot="image" src="/assets/sudoku-hero.png" alt="" width="1200" height="798">',
+    html: `${skeleton('logic')}\n${sudoku.html}`,
+    // Sudoku keeps its illustration; the other games show their spielecp logo, sized like Wortgeflecht's.
+    game: (g) => {
+      const art = heroArt(g);
+      return { values: { category: g.category, style: art.style }, html: `${skeleton(g.category)}\n${art.html}` };
+    },
     layout: 'fill',
     width: true,
     prevent: ['zon-start'],

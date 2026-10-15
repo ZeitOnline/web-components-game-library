@@ -1,4 +1,8 @@
-# Skeletons
+---
+title: Skeletons
+summary: "Placeholders from critical.css that keep the layout still until the components are defined."
+order: 3
+---
 
 Custom elements only render once their JavaScript has run. Until then, an empty tag takes no space: the page first shows the frame, then jumps when the hero and list appear. `critical.css` contains plain-HTML skeletons that paint immediately and have **the same size and breakpoints** as the components (checked at 375, 700 and 1000 px), so the swap doesn't move anything.
 
@@ -37,6 +41,16 @@ Put the skeleton **inside** the component tag. Once the element is defined, the 
 </zon-puzzle-list>
 ```
 
+The feedback button needs no markup to keep its space: `critical.css` gives the undefined element the button's height (50px). For a visible placeholder, add the yellow pill:
+
+```html
+<zon-game-feedback-button form-id="obbQ8AeR" game-name="Sudoku">
+  <div class="zon-skeleton zon-skeleton--feedback-button" aria-hidden="true">
+    <span class="zon-skeleton__bone zon-skeleton__button"></span>
+  </div>
+</zon-game-feedback-button>
+```
+
 ## Per framework
 
 - **Angular:** `<app-root>` stays empty until the app has started, so put the skeletons inside `<app-root>` in `index.html` (not in a component template). Angular replaces them with the real components when it starts.
@@ -46,6 +60,7 @@ Put the skeleton **inside** the component tag. Once the element is defined, the 
 
 - `data-category` picks the game colours like the components' `category` attribute.
 - `--zon-skeleton-columns` mirrors `columns` on the list.
+- `--zon-skeleton-width` sets the feedback button placeholder's width (default 280px, about “Feedback zum Sudoku”).
 - `zon-skeleton--faq` (one `<div class="zon-skeleton__question">` per question) is only needed when the FAQ is rendered by JavaScript.
 
 Try it: [/games?delay=2000](/games?delay=2000) holds the components back for 2 s.

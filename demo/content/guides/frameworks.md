@@ -1,4 +1,8 @@
-# Frameworks
+---
+title: Frameworks
+summary: "Using the components in SvelteKit, Angular and plain HTML: attributes, properties and events."
+order: 2
+---
 
 The components are standard custom elements, so they work in any framework. Three rules apply everywhere:
 

@@ -17,7 +17,14 @@ npm run build:demo          # static site in demo/build
 
 On `/games`, `<zon-game-navigation>` only appears on the game screen. Open a puzzle, or go straight to `/games?game=sudoku#/sudoku/2026-10-05`.
 
-The docs data for each component lives in `demo/src/lib/components/<slug>.js`. When you change a component's API, update its doc comment and that file together.
+Each component page has two sources:
+
+- `demo/src/lib/components/<slug>.js`: API, playground and tracking. When you change a component's API, update its doc comment and this file together.
+- `demo/content/components/<slug>.md`: the written content (summary, usage, FAQ, accessibility, replaces). Guides are in `demo/content/guides/`.
+
+The games (name, category, subcategory, link, Typeform id, logo and 18×18 mini mark) live in `demo/content/games/<id>.yml`, one file per game, with the SVGs as inline code. This repo is their source: they were seeded from spielecp's `gameIcons.ts` and are edited here (also in Sveltia CMS). They feed the Game icons page and the `game-name` selects in the playgrounds.
+
+The Markdown can be edited in **Sveltia CMS**, locally for now: `npm run dev`, open `http://localhost:5173/admin/index.html` in Chrome or Edge, choose “Work with Local Repository” and select the repository root. Sveltia writes the files; commit them as usual.
 
 ## Try it locally in a game (without publishing to npm)
 
@@ -73,7 +80,7 @@ import '@zeitonline/game-components/hero';
 `})
 ```
 
-Import single components (`/dialog`, `/hero`, `/navigation`, `/puzzle-list`, `/faq`, `/timer`, `/result`, `/instructions`, `/tracking`) to load only what the game uses. Type declarations are included.
+Import single components (`/button`, `/dialog`, `/hero`, `/navigation`, `/puzzle-list`, `/faq`, `/feedback-button`, `/timer`, `/result`, `/instructions`, `/tracking`) to load only what the game uses. Type declarations are included.
 
 Also load `critical.css` render-blocking in `<head>` (skeletons and FAQ styles, see below):
 
@@ -126,6 +133,7 @@ Put the skeleton **inside** the component tag. Once the element is defined, the 
 
 - **Angular:** `<app-root>` stays empty until the app has started, so put the skeletons inside `<app-root>` in `index.html` (not in a component template). Angular replaces them with the real components when it starts.
 - **SvelteKit:** server-render the skeleton markup inside the tags; the components are imported client-only.
+- `<zon-game-feedback-button>` keeps its 50px height without any markup; add `<div class="zon-skeleton zon-skeleton--feedback-button" aria-hidden="true"><span class="zon-skeleton__bone zon-skeleton__button"></span></div>` inside it for a visible yellow placeholder.
 - `data-category` picks the game colours like the components' `category` attribute. `--zon-skeleton-columns` mirrors `columns` on the list.
 - `zon-skeleton--faq` (one `<div class="zon-skeleton__question">` per question) is only needed when the FAQ is rendered by JavaScript.
 - Try it: `/games?delay=2000` on the docs site holds the components back for 2 s.
@@ -162,6 +170,7 @@ npx vite dev --force
 
 | Element | Purpose |
 | --- | --- |
+| `<zon-game-button>` | The shared button: primary / secondary / outline / text / premium / icon, link or form button |
 | `<zon-game-dialog>` | Modal / bottom sheet / fullscreen (paywall) on native `<dialog>` |
 | `<zon-game-instructions>` | "So wird gespielt" stepper |
 | `<zon-game-timer>` | Stopwatch with pause |
@@ -170,6 +179,7 @@ npx vite dev --force
 | `<zon-game-navigation>` | In-game header: back / archive / title / theme or hint / more, plus custom buttons with callbacks |
 | `<zon-puzzle-list>` | "Weitere … Rätsel" grid with status badges and "Alle anzeigen" |
 | `<zon-game-faq>` | FAQ accordion in the light DOM (SEO), native `<details>`, tracking, JSON-LD |
+| `<zon-game-feedback-button>` | Yellow "Feedback zum …" button that opens a Typeform survey (link without JS, SDK loaded on demand) |
 | `critical.css` | Skeletons for hero / list / FAQ and the FAQ styles, loaded in `<head>` |
 
 The API of each component (attributes, properties, slots, events) is documented at the top of its file in `src/components/`.

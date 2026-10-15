@@ -36,17 +36,19 @@
 
 <a class="sr-only" href="#inhalt">Skip to content</a>
 <header class="site-header">
-  <a class="site-logo" href={resolve('/')}><b>ZEIT</b> Game Components <span>v{pkg.version}</span></a>
-  <nav class="site-nav" aria-label="Sections">
-    <a href={resolve('/')} aria-current={!inGuides ? 'page' : undefined}>Components</a>
-    <a href={resolve('/guides/[slug]', { slug: 'getting-started' })} aria-current={inGuides ? 'page' : undefined}>Guides</a>
-    <a href={resolve('/games')}>Game demo</a>
-  </nav>
-  <button type="button" class="theme-toggle" aria-label="Toggle light / dark" onclick={toggleTheme}>
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"
-      ><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg
-    >
-  </button>
+  <div class="site-header__inner">
+    <a class="site-logo" href={resolve('/')}><b>ZEIT</b> Game Components <span>v{pkg.version}</span></a>
+    <nav class="site-nav" aria-label="Sections">
+      <a href={resolve('/')} aria-current={!inGuides ? 'page' : undefined}>Components</a>
+      <a href={resolve('/guides/[slug]', { slug: 'getting-started' })} aria-current={inGuides ? 'page' : undefined}>Guides</a>
+      <a href={resolve('/games')}>Game demo</a>
+    </nav>
+    <button type="button" class="theme-toggle" aria-label="Toggle light / dark" onclick={toggleTheme}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"
+        ><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg
+      >
+    </button>
+  </div>
 </header>
 
 <div class="site-shell">
@@ -56,7 +58,7 @@
   <nav id="side-menu" class="site-side" class:is-open={sideOpen} aria-label="Documentation">
     <h3>Start</h3>
     <a href={resolve('/')} aria-current={current('/')}>Overview</a>
-    <a href={resolve('/games')}>Game demo <small>Sudoku ⇄ Wortgeflecht</small></a>
+    <a href={resolve('/game-icons')} aria-current={current('/game-icons')}>Game icons <small>logos + mini marks</small></a>
 
     {#each groups as { category, components } (category)}
       <h3>{category}</h3>

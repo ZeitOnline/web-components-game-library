@@ -1,0 +1,26 @@
+name: Um die Ecke gebracht
+category: crossword
+subcategory: ZEIT Verbrechen Kreuzworträtsel
+href: https://spiele.zeit.de/um-die-ecke-gebracht/
+order: 80
+logo: |
+  <svg aria-hidden="true" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  	<path d="M16 22.005C16 18.6913 18.6863 16.005 22 16.005L45.33 16.005V45.335H22C18.6863 45.335 16 42.6487 16 39.335L16 22.005Z" fill="white" stroke="black" stroke-width="4"/>
+  	<path d="M45.33 16.005L68.66 16.005C71.9737 16.005 74.66 18.6913 74.66 22.005V45.335H45.33L45.33 16.005Z" fill="white" stroke="black" stroke-width="4"/>
+  	<path d="M45.34 45.335L74.67 45.335V74.665H45.34L45.34 45.335Z" fill="white" stroke="black" stroke-width="4"/>
+  	<path d="M74.67 45.335H98C101.314 45.335 104 48.0213 104 51.335V74.665H74.67V45.335Z" fill="white" stroke="black" stroke-width="4"/>
+  	<path d="M16 80.665C16 77.3513 18.6863 74.665 22 74.665H45.33V103.995H22C18.6863 103.995 16 101.309 16 97.995L16 80.665Z" fill="white" stroke="black" stroke-width="4"/>
+  	<rect x="45.33" y="74.665" width="29.33" height="29.33" fill="white" stroke="black" stroke-width="4"/>
+  	<path d="M74.66 74.665H103.99V97.995C103.99 101.309 101.304 103.995 97.99 103.995H74.66V74.665Z" fill="white" stroke="black" stroke-width="4"/>
+  	<circle cx="74.6508" cy="74.65" r="27.35" fill="#FFD100"/>
+  	<path d="M74.6992 46L74.6992 103" stroke="black" stroke-width="4"/>
+  	<path d="M45 74.7L102 74.7" stroke="black" stroke-width="4"/>
+  	<path d="M75.6543 58.2792C84.5213 58.504 91.6406 65.7632 91.6406 74.6844L91.6348 75.1083C91.4098 83.9752 84.1516 91.0945 75.2305 91.0946L74.8066 91.0887C66.0804 90.8676 59.0466 83.8345 58.8252 75.1083L58.8203 74.6844C58.8203 65.6215 66.1675 58.2743 75.2305 58.2743L75.6543 58.2792ZM75.2305 62.2743C68.3766 62.2743 62.8203 67.8306 62.8203 74.6844C62.8205 81.5382 68.3767 87.0946 75.2305 87.0946C82.0842 87.0945 87.6405 81.5381 87.6406 74.6844C87.6406 67.8306 82.0843 62.2744 75.2305 62.2743Z" fill="black"/>
+  	<path d="M83 25H95L89 34L83 25Z" fill="black" stroke="black" stroke-width="6" stroke-linejoin="round"/>
+  </svg>
+mini: |
+  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+  	<circle cx="9" cy="9" r="5.5" fill="var(--z-ds-color-games-yellow, #FFD100ff)"/>
+  	<path d="M9.625 5.19824C11.2512 5.46423 12.5346 6.74857 12.7998 8.375H14.8057V9.625H12.7998C12.534 11.2507 11.2506 12.5337 9.625 12.7998V14.8057H8.375V12.7998C6.74823 12.5347 5.4641 11.2516 5.19824 9.625H3.19434V8.375H5.19824C5.46353 6.74765 6.74755 5.46224 8.375 5.19727V3.19434H9.625V5.19824ZM6.47656 9.625C6.70761 10.5592 7.44057 11.2921 8.375 11.5225V9.625H6.47656ZM9.625 9.625V11.5215C10.5583 11.2903 11.2905 10.5583 11.5215 9.625H9.625ZM9.625 8.375H11.5225C11.292 7.44087 10.5589 6.70768 9.625 6.47656V8.375ZM8.375 6.47559C7.43988 6.70594 6.70616 7.43997 6.47559 8.375H8.375V6.47559Z" fill="#252525"/>
+  	<path d="M15 2C15.5523 2 16 2.44772 16 3V15C16 15.5523 15.5523 16 15 16H3C2.44772 16 2 15.5523 2 15V3C2 2.44772 2.44772 2 3 2H15ZM3.5 14.5H14.5V3.5H3.5V14.5Z" fill="var(--z-ds-color-text-100, #252525ff)"/>
+  </svg>

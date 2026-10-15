@@ -4,12 +4,6 @@ export default {
   tag: 'zon-game-dialog',
   name: 'Dialog',
   category: 'Overlays',
-  summary:
-    'Modal, bottom sheet or fullscreen overlay on the native <dialog> element: top layer, inert background and focus trap come for free.',
-  replaces: [
-    'Wortgeflecht <code>Dialog.svelte</code> + <code>DialogManager</code>',
-    'Angular <code>zonspiele-overlay</code> + <code>OverlayService</code> (CDK focus trap)',
-  ],
   attributes: [
     { name: 'variant', type: 'enum', options: ['default', 'wide', 'drawer', 'fullscreen'], default: 'default', description: '<code>drawer</code> is a bottom sheet below 768px, <code>fullscreen</code> the paywall layout.' },
     { name: 'open', type: 'boolean', description: 'Reflects the state. Set or remove it to open or close.' },
@@ -44,32 +38,14 @@ export default {
     { name: '--zon-dialog-max-width', description: 'Maximum width (default 26rem, wide 568px).' },
     { name: '--zon-dialog-bg', description: 'Background (default: background-modal token).' },
   ],
-  a11y: [
-    { topic: 'Role', text: 'Native modal <dialog>: the rest of the page is inert while it is open.' },
-    { topic: 'Name', text: 'aria-labelledby points at the title slot; without a title, set label.' },
-    { topic: 'Focus', text: 'Moves to the title on open (screen readers announce it) and back to the opener on close.' },
-    { topic: 'Keyboard', text: 'Esc closes, unless persistent. Tab stays inside the dialog.' },
-    { topic: 'Scroll', text: 'The page behind is scroll-locked; nested dialogs are counted.' },
-  ],
   tracking: [
     { when: 'Opened', payload: "{ event: 'game_interaction', action: 'open', target: <id> }" },
     { when: 'Closed', payload: "{ event: 'game_interaction', action: 'close', target: <id>, reason }" },
   ],
-  usage: {
-    when: [
-      'Rules, archive, “Mehr” menu and the paywall: anything that interrupts the game.',
-      '<code>drawer</code> for menus and lists on mobile, <code>wide</code> for the rules stepper.',
-    ],
-    whenNot: ['Short confirmations that do not need focus (use a toast / live region).', 'Navigation to a different page.'],
-    faq: [
-      { q: 'Why does my slotted heading look different?', a: 'Slotted content is light DOM: the page styles it. A global <code>h2 { text-transform: uppercase }</code> also hits <code>&lt;h2 slot="title"&gt;</code>. Style slotted content in the game.' },
-      { q: 'How do I open it from <zon-game-navigation>?', a: 'Give the dialog an id and set <code>archive-dialog="&lt;id&gt;"</code> or <code>more-dialog="&lt;id&gt;"</code> on the navigation. aria-expanded is kept in sync automatically.' },
-      { q: 'Can I stack dialogs?', a: 'Yes. Each one is a top-layer element; the scroll lock counts open dialogs.' },
-    ],
-  },
   playground: {
     values: { variant: 'default', open: false, persistent: false, closable: false, label: '', 'close-label': '' },
-    html: '<h2 slot="title">Mehr</h2>\n<p>Game content, e.g. the list of games from more-screen.</p>\n<button slot="footer" type="button">Spielregeln</button>',
+    html: '<h2 slot="title">Mehr</h2>\n<p>Game content, e.g. the list of games from more-screen.</p>\n<zon-game-button slot="footer">Spielregeln</zon-game-button>',
+    imports: ['@zeitonline/game-components/button'],
     note: 'The dialog renders in the browser’s top layer, not on this stage. Open it with show() or the open switch.',
     actions: [
       { label: 'show()', run: (el) => el.show() },

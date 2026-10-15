@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Content · Sveltia CMS</title>
+    <!-- Link the config explicitly; Sveltia would otherwise look for it relative to the URL. -->
+    <link href="/admin/config.yml" type="text/yaml" rel="cms-config-url" />
+  </head>
+  <body>
+    <!--
+      Self-hosted: the file comes from the @sveltia/cms dependency and is copied here on
+      every install (postinstall, not committed), so nothing loads from a CDN.
+      Local only: open http://localhost:5173/admin/index.html in Chrome or Edge, choose
+      "Work with Local Repository" and select the repository ROOT folder. Sveltia writes
+      straight into the files; nothing is committed or pushed.
+    -->
+    <script src="/admin/sveltia-cms.js"></script>
+  </body>
+</html>

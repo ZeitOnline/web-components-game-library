@@ -1,4 +1,8 @@
-# Tracking
+---
+title: Tracking
+summary: "How zon-track events reach the dataLayer, and what each component sends."
+order: 4
+---
 
 Components never touch `window.dataLayer`. They emit a `zon-track` event with the payload the games already send today (same schema as `DataTracker` / `TrackingService`). The game decides how, or whether, to forward it.
 

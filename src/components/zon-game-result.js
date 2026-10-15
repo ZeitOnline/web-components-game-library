@@ -189,10 +189,10 @@ export class ZonGameResult extends ZonElement {
           ${primary ? `<button type="button" class="zon-button" data-action="primary">${escapeHtml(primary)}</button>` : ''}
           ${
             shareText !== null
-              ? `<button type="button" class="zon-button zon-button--secondary" data-action="share">${icons.share(18)} ${escapeHtml(this.label('share-label', 'Ergebnis teilen'))}</button>`
+              ? `<button type="button" class="zon-button zon-button--outline" data-action="share">${icons.share(18)} ${escapeHtml(this.label('share-label', 'Ergebnis teilen'))}</button>`
               : ''
           }
-          ${secondary ? `<button type="button" class="zon-button zon-button--secondary" data-action="secondary">${escapeHtml(secondary)}</button>` : ''}
+          ${secondary ? `<button type="button" class="zon-button zon-button--outline" data-action="secondary">${escapeHtml(secondary)}</button>` : ''}
         </div>
         <div class="status" role="status" aria-live="polite"></div>
         <slot></slot>

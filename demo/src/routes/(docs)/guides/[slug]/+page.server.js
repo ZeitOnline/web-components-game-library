@@ -9,5 +9,5 @@ export const load = ({ params }) => {
   const index = GUIDES.indexOf(guide);
   const { html, toc } = render(guide.source);
   const link = (/** @type {typeof guide | undefined} */ g) => (g ? { slug: g.slug, title: g.title } : null);
-  return { title: guide.title, html, toc, prev: link(GUIDES[index - 1]), next: link(GUIDES[index + 1]) };
+  return { slug: guide.slug, title: guide.title, editable: guide.slug !== 'plan', html, toc, prev: link(GUIDES[index - 1]), next: link(GUIDES[index + 1]) };
 };

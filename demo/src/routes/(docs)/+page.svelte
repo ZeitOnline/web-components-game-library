@@ -5,6 +5,7 @@
 
   let { data } = $props();
   const groups = byCategory();
+  const slug = (/** @type {string} */ s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 </script>
 
 <svelte:head><title>ZEIT Game Components</title></svelte:head>
@@ -19,12 +20,13 @@
   </p>
   <div class="actions">
     <a class="action" href={resolve('/guides/[slug]', { slug: 'getting-started' })}>Getting started</a>
+    <a class="action" href={resolve('/game-icons')}>Game icons</a>
     <a class="action" href={resolve('/games')}>Game demo <span aria-hidden="true">→</span></a>
   </div>
 
   {#each groups as { category, components } (category)}
-    <section class="section" aria-labelledby="h-{category}">
-      <h2 id="h-{category}">{category}</h2>
+    <section class="section" aria-labelledby="h-{slug(category)}">
+      <h2 id="h-{slug(category)}">{category}</h2>
       <div class="cards">
         {#each components as c (c.slug)}
           <article class="card">
@@ -32,7 +34,7 @@
             <div class="card__body">
               <a class="card__title" href={resolve('/components/[slug]', { slug: c.slug })}>{c.name}</a>
               <code class="meta">&lt;{c.tag}&gt;</code>
-              <p class="card__summary">{c.summary}</p>
+              <p class="card__summary">{@html data.summaries[c.slug]}</p>
             </div>
           </article>
         {/each}
@@ -46,6 +48,7 @@
       {#each data.guides as g (g.slug)}
         <a class="page-card" href={resolve('/guides/[slug]', { slug: g.slug })}>
           <strong>{g.title}</strong>
+          {#if g.summary}<span>{g.summary}</span>{/if}
         </a>
       {/each}
     </div>

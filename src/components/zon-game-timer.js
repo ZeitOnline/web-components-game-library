@@ -1,7 +1,8 @@
 /**
  * <zon-game-timer>
  *
- * Stopwatch pill with play/pause, ported from sudoku `app/components/game/stop-watch`.
+ * Stopwatch with play/pause, ported 1:1 from sudoku `app/components/game/stop-watch`
+ * (styles from stop-watch.component.scss, icons from assets/icons/commons).
  * Unlike the Angular version, it does not tick every 100 ms. Elapsed time comes from
  * `performance.now()`, and the DOM updates only once per displayed second.
  *
@@ -28,25 +29,34 @@ import { icons } from '../shared/icons.js';
 
 const sheet = css`
 :host { display: inline-block; }
+/* sudoku: padding S M S S, gap XXS, radius Border-Radius-Medium (4px), labelBold 14px. */
 button {
   appearance: none;
   display: inline-flex;
+  justify-content: center;
   align-items: center;
-  gap: var(--_space-xs);
+  gap: var(--z-ds-space-xxs, 6px);
+  width: 100%;
   height: 40px;
-  padding: 0 var(--_space-s);
+  padding: var(--_space-s) var(--_space-m) var(--_space-s) var(--_space-s);
   border: 1px solid var(--_border-70);
-  border-radius: 999px;
+  border-radius: var(--z-ds-border-radius-4, 4px);
   background: var(--_bg-0);
   color: var(--_text-100);
   font: inherit;
   font-size: var(--_fs-14);
   font-weight: 700;
+  line-height: 1;
   cursor: pointer;
 }
+button:hover { background: var(--_bg-10); }
 button:focus-visible { outline: 2px solid var(--_focus-100); outline-offset: 2px; }
 :host([disabled]) button { cursor: default; opacity: 0.6; }
-.time { font-variant-numeric: tabular-nums; min-width: 5ch; text-align: left; }
+:host([disabled]) button:hover { background: var(--_bg-0); }
+.icon { display: inline-flex; flex-shrink: 0; }
+/* Fixed box, right-aligned: the digits don't move the icon while counting. */
+.time { width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
+.time.long { width: 54px; }
 `;
 
 export function formatTime(ms) {
@@ -156,6 +166,7 @@ export class ZonGameTimer extends ZonElement {
   #paint() {
     const text = formatTime(this.elapsed);
     if (this.#time.textContent !== text) this.#time.textContent = text;
+    this.#time.classList.toggle('long', text.length > 5);
     const running = this.running;
     const label = running
       ? this.label('pause-label', 'Timer pausieren')
@@ -168,7 +179,7 @@ export class ZonGameTimer extends ZonElement {
     const iconName = running ? 'pause' : 'play';
     if (this.#icon.dataset.icon !== iconName) {
       this.#icon.dataset.icon = iconName;
-      this.#icon.innerHTML = icons[iconName](16);
+      this.#icon.innerHTML = icons[iconName](18);
     }
   }
 }

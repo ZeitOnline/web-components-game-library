@@ -10,6 +10,10 @@
       "types": "./src/index.d.ts",
       "default": "./src/index.js"
     },
+    "./button": {
+      "types": "./src/index.d.ts",
+      "default": "./src/components/zon-game-button.js"
+    },
     "./dialog": {
       "types": "./src/index.d.ts",
       "default": "./src/components/zon-game-dialog.js"
@@ -45,6 +49,10 @@
     "./navigation": {
       "types": "./src/index.d.ts",
       "default": "./src/components/zon-game-navigation.js"
+    },
+    "./feedback-button": {
+      "types": "./src/index.d.ts",
+      "default": "./src/components/zon-game-feedback-button.js"
     },
     "./critical.css": "./src/critical.css"
   },

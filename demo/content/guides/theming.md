@@ -1,4 +1,8 @@
-# Theming
+---
+title: Theming
+summary: "Tokens, dark mode, game colours and what can be styled from outside."
+order: 5
+---
 
 ## Tokens
 

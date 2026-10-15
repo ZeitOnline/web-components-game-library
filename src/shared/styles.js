@@ -16,12 +16,15 @@ sheet.replaceSync(`
   --_text-55: var(--z-ds-color-text-55, #69696c);
   --_bg-0: var(--z-ds-color-background-0, #fff);
   --_bg-10: var(--z-ds-color-background-10, #eee);
+  --_bg-20: var(--z-ds-color-background-20, #dfdfe1);
   --_bg-modal: var(--z-ds-color-background-modal, #fff);
   --_border-70: var(--z-ds-color-border-70, #e4e4e4);
+  --_border-100: var(--z-ds-color-border-100, #cccccf);
   --_black-100: var(--z-ds-color-general-black-100, #000);
   --_black-40: var(--z-ds-color-general-black-40, rgba(0, 0, 0, 0.4));
   --_white-100: var(--z-ds-color-general-white-100, #fff);
   --_accent-100: var(--z-ds-color-accent-100, #b91109);
+  --_accent-70: var(--z-ds-color-accent-70, #880d07);
   --_focus-100: var(--z-ds-color-focus-100, #005fcc);
   --_games-accent: var(--games-accent, #ffcd29);
 
@@ -31,6 +34,7 @@ sheet.replaceSync(`
   --_space-l: var(--z-ds-space-l, 24px);
   --_space-xl: var(--z-ds-space-xl, 32px);
 
+  --_radius-4: var(--z-ds-border-radius-4, 4px);
   --_radius-8: var(--z-ds-border-radius-8, 8px);
   --_radius-12: var(--z-ds-border-radius-12, 12px);
   --_shadow: var(--z-ds-boxshadow-base, 0 4px 16px rgba(0, 0, 0, 0.16));
@@ -79,48 +83,75 @@ sheet.replaceSync(`
 :host([hidden]), [hidden] { display: none !important; }
 *, *::before, *::after { box-sizing: inherit; }
 
+/*
+ * Buttons: the styles sudoku (commons/styles/button.scss) and Wortgeflecht (lib/styles/button.css)
+ * share. Used by <zon-game-button> and by the buttons inside the other components, so every
+ * button in the library looks the same. Colours are tokens, so dark mode comes for free.
+ *   primary (default) · --secondary · --outline · --text · --premium · --icon (round) · --small
+ */
 .zon-button {
   appearance: none;
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--_space-xs);
-  min-height: 44px;
-  padding: var(--_space-s) var(--_space-m);
+  height: 40px;
+  min-width: 80px;
+  padding: 0 var(--_space-m);
   border: 0;
-  border-radius: var(--_radius-8);
+  border-radius: var(--_radius-4);
+  background: var(--_text-100);
+  color: var(--_bg-0);
   font: inherit;
-  font-weight: 700;
   font-size: var(--_fs-16);
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
-  background: var(--_black-100);
-  color: var(--_white-100);
+  transition: background-color 200ms ease-out, color 200ms ease-out;
 }
-.zon-button--secondary {
-  background: transparent;
-  color: var(--_text-100);
-  box-shadow: inset 0 0 0 1px var(--_border-70);
-}
+.zon-button:hover { background: var(--_text-70); }
+.zon-button--secondary { background: var(--_bg-10); color: var(--_text-100); }
+.zon-button--secondary:hover { background: var(--_bg-20); }
+.zon-button--outline { background: var(--_bg-0); color: var(--_text-100); box-shadow: inset 0 0 0 1px var(--_border-70); }
+.zon-button--outline:hover { background: var(--_bg-10); }
+/* Z+ / paywall. White text on both themes. */
+.zon-button--premium { background: var(--_accent-100); color: #fff; }
+.zon-button--premium:hover { background: var(--_accent-70); }
 .zon-button--text {
+  height: auto;
+  min-width: 0;
+  padding: var(--_space-xs);
+  margin: 0 calc(-1 * var(--_space-xs));
   background: transparent;
-  color: var(--_text-100);
-  text-decoration: underline;
+  color: var(--_text-70);
   font-weight: 400;
 }
+.zon-button--text:hover { background: var(--_bg-10); color: var(--_text-100); }
+.zon-button svg { display: block; flex-shrink: 0; }
+/* Round icon button, as in the game navigation (sudoku iconButton): 43px, 32px when small. */
 .zon-button--icon {
-  min-height: 0;
-  padding: var(--_space-xs);
-  aspect-ratio: 1;
+  flex: none;
+  width: 43px;
+  min-width: 0;
+  height: 43px;
+  padding: 0;
+  border: 1px solid var(--_border-100);
   border-radius: 50%;
   background: var(--_bg-0);
-  color: var(--_text-100);
-  box-shadow: inset 0 0 0 1px var(--_border-70);
+  color: var(--_text-70);
 }
+.zon-button--icon:hover { background: var(--_border-100); }
+.zon-button--small { height: 32px; font-size: var(--_fs-14); }
+.zon-button--icon.zon-button--small { width: 32px; height: 32px; }
 .zon-button:focus-visible {
   outline: 2px solid var(--_focus-100);
   outline-offset: 4px;
 }
-.zon-button[disabled] { opacity: 0.4; cursor: default; }
+.zon-button:is(:disabled, [aria-disabled='true']) { opacity: 0.4; cursor: default; pointer-events: none; }
 
 .sr-only {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;

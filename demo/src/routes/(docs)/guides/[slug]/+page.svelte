@@ -10,6 +10,9 @@
 <main class="site-main" id="inhalt">
   <div class="crumb">Guides</div>
   <h1>{data.title}</h1>
+  {#if data.editable}
+    <p class="edit"><a href="/admin/index.html#/collections/guides/entries/{data.slug}" data-sveltekit-reload>Edit this guide</a></p>
+  {/if}
   <!-- Markdown from the repo (trusted), rendered at build time. -->
   <article class="prose-long">{@html data.html}</article>
   <nav class="pager" aria-label="Guides">
@@ -30,6 +33,10 @@
 </aside>
 
 <style>
+  .edit {
+    margin: 0 0 24px;
+    font-size: 14px;
+  }
   .pager {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
