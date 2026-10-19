@@ -13,11 +13,13 @@ import { baseSheet } from './styles.js';
 export class ZonElement extends HTMLElement {
   /** Component-specific CSSStyleSheet, set by subclasses. */
   static sheet = null;
+  /** Extra attachShadow() options, e.g. { delegatesFocus: true }. */
+  static shadowOptions = {};
 
   constructor() {
     super();
     // Re-use a declarative shadow root if the server rendered one (SSR).
-    this.root = this.shadowRoot ?? this.attachShadow({ mode: 'open' });
+    this.root = this.shadowRoot ?? this.attachShadow({ mode: 'open', ...this.constructor.shadowOptions });
     const sheets = [baseSheet];
     if (this.constructor.sheet) sheets.push(this.constructor.sheet);
     this.root.adoptedStyleSheets = sheets;

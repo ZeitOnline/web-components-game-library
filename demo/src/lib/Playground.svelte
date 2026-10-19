@@ -5,11 +5,15 @@
   MutationObserver reads them back, so state the component reflects itself (dialog
   `open`, instructions `step`, navigation `disabled-actions`) shows in the controls.
   The code tabs are generated from the same values (see markup.js).
+
+  `game-name` is a select of the games in content/games: picking one also applies
+  the definition's `game` preset (category, artwork, icon, …).
 -->
 <script>
   import { onMount } from 'svelte';
   import CopyButton from './CopyButton.svelte';
-  import { applyValues, mount, readValue, snippets } from './markup.js';
+  import { GAME_CATALOG, gameByName } from './games.js';
+  import { applyContent, applyValues, elementHTML, mount, readValue, snippets } from './markup.js';
 
   /** @type {{ component: import('./components/types').ComponentDef }} */
   let { component } = $props();
@@ -19,12 +23,26 @@
   const pg = def.playground;
   const defaults = { ...pg.values };
   const controls = Object.keys(defaults).map((name) => def.attributes.find((a) => a.name === name));
+  const gameAttr = controls.find((a) => a?.game);
   const groups = ['enum', 'boolean', 'text']
-    .map((type) => controls.filter((a) => a?.type === type))
+    .map((type) => controls.filter((a) => a?.type === type && !a.game))
     .filter((g) => g.length);
   const listened = [...def.events.map((e) => e.name), 'zon-track'];
 
   let values = $state({ ...defaults });
+  /** Light DOM and properties; replaced when another game is picked. */
+  const initialContent = { html: pg.html, props: pg.props };
+  let content = $state.raw(initialContent);
+  // Server-rendered into the stage, so the element (and its skeleton) is there before any script.
+  const initialMarkup = elementHTML(def, defaults, [], pg.html);
+  const escapeText = (/** @type {string} */ t) => t.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+  const unescapeText = (/** @type {string} */ t) => t.replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&amp;', '&');
+
+  /** The "text" control: the element's content, when it is plain text. */
+  function setText(/** @type {string} */ text) {
+    content = { ...content, html: escapeText(text) };
+    if (el) applyContent(el, content);
+  }
   let stageTheme = $state('page');
   let width = $state('full');
   let tab = $state('html');
@@ -36,8 +54,8 @@
   /** @type {HTMLElement | undefined} */
   let el = $state();
 
-  const code = $derived(snippets(def, values));
-  const dirty = $derived(Object.keys(defaults).some((k) => values[k] !== defaults[k]));
+  const code = $derived(snippets(def, values, content));
+  const dirty = $derived(content !== initialContent || Object.keys(defaults).some((k) => values[k] !== defaults[k]));
   let nextId = 0;
 
   function refreshInspect() {
@@ -65,7 +83,7 @@
     };
     for (const name of listened) host?.addEventListener(name, onEvent);
 
-    mount(/** @type {HTMLElement} */ (host), def, $state.snapshot(values)).then((element) => {
+    mount(/** @type {HTMLElement} */ (host), def, $state.snapshot(values), content).then((element) => {
       el = element;
       observer = new MutationObserver(() => {
         for (const name of Object.keys(defaults)) {
@@ -92,6 +110,22 @@
 
   function reset() {
     values = { ...defaults };
+    content = initialContent;
+    if (el) applyContent(el, content);
+  }
+
+  /** @param {string} name */
+  function pickGame(name) {
+    if (!gameAttr) return;
+    values[gameAttr.name] = name;
+    const game = gameByName(name);
+    const preset = game && pg.game ? pg.game(game) : {};
+    Object.assign(values, preset.values ?? {});
+    content = {
+      html: preset.html ?? content.html,
+      props: preset.props ? { ...content.props, ...preset.props } : content.props,
+    };
+    if (el) applyContent(el, content);
   }
 
   const TABS = /** @type {const} */ ([
@@ -134,12 +168,38 @@
     <div
       class="stage-host"
       class:stage-host--sized={width !== 'full'}
+      class:stage-host--reserve={pg.reserve}
+      style:--reserve={pg.reserve}
       style:width={width === 'full' ? null : `${width}px`}
       bind:this={host}
-    ></div>
+    >
+      <!-- The element is adopted by mount() and then changed in place; this markup never re-renders. -->
+      {@html initialMarkup}
+    </div>
   </div>
 
   <div class="controls" role="group" aria-label="Attributes">
+    {#if pg.text}
+      <label class="label" for="t-{def.slug}">text</label>
+      <span class="control control--wrap">
+        <input id="t-{def.slug}" class="field" type="text" maxlength="80" value={unescapeText(content.html ?? '')} oninput={(e) => setText(e.currentTarget.value)} />
+        <span class="meta">content between the tags</span>
+      </span>
+      <span class="rule" aria-hidden="true"></span>
+    {/if}
+    {#if gameAttr}
+      <label class="label" for="g-{def.slug}">{gameAttr.name}</label>
+      <span class="control control--wrap">
+        <span class="select">
+          <select id="g-{def.slug}" value={values[gameAttr.name]} onchange={(e) => pickGame(e.currentTarget.value)}>
+            {#if !gameByName(/** @type {string} */ (values[gameAttr.name]))}<option value={values[gameAttr.name]}>{values[gameAttr.name] || '—'}</option>{/if}
+            {#each GAME_CATALOG as g (g.id)}<option value={g.name}>{g.name}</option>{/each}
+          </select>
+        </span>
+        <span class="meta">{gameByName(/** @type {string} */ (values[gameAttr.name]))?.subcategory ?? ''}</span>
+      </span>
+      <span class="rule" aria-hidden="true"></span>
+    {/if}
     {#each groups as group, g (g)}
       {#if g > 0}<span class="rule" aria-hidden="true"></span>{/if}
       {#each group as a (a.name)}
@@ -173,7 +233,7 @@
               id="f-{def.slug}-{a.name}"
               class="field"
               type="text"
-              placeholder={a.default ?? 'not set'}
+              placeholder={a.placeholder ?? a.default ?? 'not set'}
               bind:value={values[a.name]}
             />
           </span>
@@ -255,6 +315,11 @@
   }
   .stage--fill .stage-host {
     width: 100%;
+  }
+  /* Until the element is defined it has no height; keep the stage from jumping. */
+  /* :global: the element comes from {@html}, so it has no Svelte scope class. */
+  .stage-host--reserve:has(> :global(:not(:defined))) {
+    min-height: var(--reserve);
   }
   .stage-host--sized {
     align-self: center;

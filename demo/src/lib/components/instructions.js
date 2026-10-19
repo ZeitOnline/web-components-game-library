@@ -14,12 +14,6 @@ export default {
   tag: 'zon-game-instructions',
   name: 'Instructions',
   category: 'Overlays',
-  summary: 'The “So wird gespielt” stepper: slides with text and artwork, progress dots, skip and start. Usually placed inside a wide dialog.',
-  replaces: [
-    'Wortgeflecht <code>InstructionsDialog.svelte</code>',
-    'sudoku <code>game/instructions</code>',
-    'wortiger <code>components/instructions</code>',
-  ],
   attributes: [
     { name: 'step', type: 'enum', options: ['0', '1', '2'], default: '0', description: 'Current step, 0-based. Reflects.' },
     { name: 'next-label', type: 'text', default: 'Weiter', description: 'Next button.' },
@@ -45,28 +39,15 @@ export default {
     { name: 'actions', description: 'Next / start and skip / restart.' },
   ],
   cssProps: [],
-  a11y: [
-    { topic: 'Live region', text: 'The slide is aria-live="polite" and labelled “Schritt n von m”.' },
-    { topic: 'Progress', text: 'Dots are buttons; the current one has aria-current="step".' },
-    { topic: 'Focus', text: 'Re-rendering keeps keyboard focus on the equivalent control.' },
-    { topic: 'Artwork', text: 'Inline SVG is aria-hidden; images use imageAlt.' },
-  ],
   tracking: [
     { when: 'Step change', payload: "{ event: 'game_rules', action: 'forward' | 'backward' | 'dot' | 'restart', position, max_position }" },
     { when: 'Skip / start', payload: "{ event: 'game_rules', action: 'skip' | 'close', position, max_position }" },
   ],
-  usage: {
-    when: ['First visit of a game, before the first puzzle.', 'From the “Mehr” menu (“Spielregeln”).'],
-    whenNot: ['Long reference texts: use the FAQ.'],
-    faq: [
-      { q: 'How do I keep the dialog open after “Rätsel starten”?', a: 'Call <code>event.preventDefault()</code> on <code>zon-complete</code> (or <code>zon-skip</code>).' },
-      { q: 'Where does the content come from?', a: 'From the game. All three games already share the <code>GAME_INSTRUCTIONS</code> shape, so the array can be passed as is.' },
-    ],
-  },
   playground: {
     values: { step: '0', 'next-label': '', 'prev-label': '', 'skip-label': '', 'start-label': '', 'restart-label': '' },
     props: { steps },
     layout: 'fill',
+    reserve: '458px',
   },
   cardZoom: 0.6,
 };

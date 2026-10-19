@@ -8,13 +8,14 @@
 -->
 <script>
   import { onMount } from 'svelte';
-  import { mount } from './markup.js';
+  import { elementHTML, mount } from './markup.js';
 
   /** @type {{ component: import('./components/types').ComponentDef }} */
   let { component } = $props();
   // svelte-ignore state_referenced_locally
   const def = component;
   const parts = def.parts.map((p, i) => ({ ...p, nr: i + 1 }));
+  const initialMarkup = elementHTML(def, def.playground.values);
 
   /** @type {HTMLElement | undefined} */
   let stage = $state();
@@ -78,7 +79,7 @@
 
 <div class="panel anatomy" class:anatomy--stacked={def.playground.layout === 'fill'}>
   <div class="stage stage--light anatomy__stage" bind:this={stage}>
-    <div class="anatomy__render" inert bind:this={host}></div>
+    <div class="anatomy__render" inert bind:this={host}>{@html initialMarkup}</div>
     {#each boxes as box, i (i)}
       {#if box}
         <span

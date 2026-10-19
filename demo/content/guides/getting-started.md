@@ -1,4 +1,8 @@
-# Getting started
+---
+title: Getting started
+summary: "What is in the package, how to install it in a game and how to run this site."
+order: 1
+---
 
 Framework-agnostic web components for the UI that ZEIT ONLINE games share, used by both the Angular games (sudoku, wortiger, …) and the SvelteKit games (Wortgeflecht, Spiele CP). Plain JavaScript, no dependencies, themed through the `--z-ds-*` design tokens.
 
@@ -9,9 +13,11 @@ Framework-agnostic web components for the UI that ZEIT ONLINE games share, used 
 | `<zon-game-hero>` | Landing-page start banner (badge, game name, date, CTA, illustration) |
 | `<zon-puzzle-list>` | "Weitere … Rätsel" grid with status badges and "Alle anzeigen" |
 | `<zon-game-faq>` | FAQ accordion in the light DOM (SEO), native `<details>`, tracking, JSON-LD |
+| `<zon-game-feedback-button>` | Yellow “Feedback zum …” button that opens a Typeform survey |
 | `<zon-game-navigation>` | In-game header: back / archive / title / theme or hint / more, plus custom buttons |
 | `<zon-game-timer>` | Stopwatch with pause |
 | `<zon-game-result>` | End-of-game screen with stats, share and next / replay |
+| `<zon-game-button>` | The shared button: primary, secondary, outline, text, premium, icon |
 | `<zon-game-dialog>` | Modal / bottom sheet / fullscreen (paywall) on native `<dialog>` |
 | `<zon-game-instructions>` | "So wird gespielt" stepper |
 | `critical.css` | Skeletons for hero / list / FAQ and the FAQ styles, loaded in `<head>` |
@@ -42,7 +48,7 @@ import '@zeitonline/game-components/puzzle-list';
 import '@zeitonline/game-components';
 ```
 
-Entry points: `/dialog`, `/hero`, `/navigation`, `/puzzle-list`, `/faq`, `/timer`, `/result`, `/instructions`, `/tracking`. Type declarations are included. How to import in SvelteKit and Angular: see [Frameworks](./frameworks.md).
+Entry points: `/button`, `/dialog`, `/hero`, `/navigation`, `/puzzle-list`, `/faq`, `/feedback-button`, `/timer`, `/result`, `/instructions`, `/tracking`. Type declarations are included. How to import in SvelteKit and Angular: see [Frameworks](./frameworks.md).
 
 Also load `critical.css` render-blocking in `<head>` (skeletons and FAQ styles):
 
@@ -71,3 +77,14 @@ npm run dev                 # http://localhost:5173
 ```
 
 The site is a SvelteKit app in `demo/` that depends on the package via `file:..`, exactly like a game would. Edits in `src/` reload the page.
+
+## Edit the content
+
+Guides and the written parts of each component page (summary, usage, FAQ, accessibility, “Replaces”) are Markdown files in `demo/content/`. Edit them in any editor, or in Sveltia CMS:
+
+1. `npm run dev` and open [/admin/index.html](/admin/index.html) in **Chrome or Edge**.
+2. Choose **Work with Local Repository** and select the repository **root** folder.
+3. Edit and save. Sveltia writes the files on disk and the docs page reloads. Nothing is committed or pushed: review the diff and commit as usual.
+
+“Edit content” on each component page and “Edit this guide” on each guide open the matching entry. The API tables, playground and tracking stay in code (`demo/src/lib/components/<slug>.js`), so they can't drift from the components. New components start in code too.
+

@@ -1,0 +1,24 @@
+name: Schachbretträtsel
+category: logic
+subcategory: Logikrätsel
+href: https://www.zeit.de/serie/schach
+order: 140
+logo: |
+  <svg aria-hidden="true" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  	<path d="M16 22C16 18.6863 18.6863 16 22 16L38 16V38H16L16 22Z" fill="#FFD100" stroke="black" stroke-width="4"/>
+  	<rect x="38" y="16" width="22" height="22" fill="white" stroke="black" stroke-width="4"/>
+  	<rect x="60" y="16" width="22" height="22" fill="#FFD100" stroke="black" stroke-width="4"/>
+  	<path d="M82 16L98 16C101.314 16 104 18.6863 104 22V38H82V16Z" fill="white" stroke="black" stroke-width="4"/>
+  	<path d="M16 38H38V60H16L16 38Z" fill="white" stroke="black" stroke-width="4"/>
+  	<rect x="38" y="38" width="22" height="22" fill="#FFD100" stroke="black" stroke-width="4"/>
+  	<path d="M60 38H82V60H60V38Z" fill="white" stroke="black" stroke-width="4"/>
+  	<path d="M82 38H104V60H82V38Z" fill="#FFD100" stroke="black" stroke-width="4"/>
+  	<path d="M16 60H38V82H16L16 60Z" fill="#FFD100" stroke="black" stroke-width="4"/>
+  	<rect x="38" y="60" width="22" height="22" fill="white" stroke="black" stroke-width="4"/>
+  	<path d="M60 60H82V82H60V60Z" fill="#FFD100" stroke="black" stroke-width="4"/>
+  	<path d="M82 60H104V82H82V60Z" fill="white" stroke="black" stroke-width="4"/>
+  	<path d="M16 82H38V104H22C18.6863 104 16 101.314 16 98L16 82Z" fill="white" stroke="black" stroke-width="4"/>
+  	<rect x="38" y="82" width="22" height="22" fill="#FFD100" stroke="black" stroke-width="4"/>
+  	<rect x="60" y="82" width="22" height="22" fill="white" stroke="black" stroke-width="4"/>
+  	<path d="M82 82H104V98C104 101.314 101.314 104 98 104H82V82Z" fill="#FFD100" stroke="black" stroke-width="4"/>
+  </svg>

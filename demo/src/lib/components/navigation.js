@@ -7,9 +7,6 @@ export default {
   tag: 'zon-game-navigation',
   name: 'Navigation',
   category: 'Game screen',
-  summary:
-    'In-game header: round icon buttons left and right, centred title. Built-in actions (back, archive, theme, hint, more) plus custom buttons with callbacks.',
-  replaces: ['sudoku <code>game/game-header</code> + <code>darkmode-toggle</code> (copied by wortiger)', 'Wortgeflecht <code>GameHeader.svelte</code>'],
   attributes: [
     { name: 'heading', type: 'text', description: 'Title in the middle (or slot="title").' },
     { name: 'heading-level', type: 'enum', options: [null, '1', '2'], description: 'Renders the title as h1–h6. Default: plain div, as in sudoku.' },
@@ -42,21 +39,7 @@ export default {
     { name: 'title', description: 'Centred title.' },
   ],
   cssProps: [],
-  a11y: [
-    { topic: 'Names', text: 'Every icon button has a German aria-label; override with <action>-label.' },
-    { topic: 'Theme', text: 'role="switch" with aria-checked, synced with the frame’s colour scheme.' },
-    { topic: 'Menus', text: 'archive and more have aria-haspopup="dialog" and aria-expanded.' },
-    { topic: 'Disabled', text: 'aria-disabled keeps disabled buttons discoverable.' },
-  ],
   tracking: [{ when: 'Any button', payload: "{ event: 'game_interaction', action: 'click', target: <action>, position: 'ingame' }" }],
-  usage: {
-    when: ['Top of the game screen.'],
-    whenNot: ['Landing pages: the ZON frame provides that header.'],
-    faq: [
-      { q: 'Handlers, events or customActions?', a: 'Svelte / vanilla: <code>handlers</code>. Angular: <code>(zon-nav)="…"</code>. Game-specific buttons (print): <code>customActions</code>.' },
-      { q: 'The theme button changed this whole site. Why?', a: 'Its default action toggles <code>html.color-scheme-dark</code>, the ZON frame convention, and fires <code>colorscheme</code> on window. This site uses the same convention.' },
-    ],
-  },
   playground: {
     values: { heading: 'Sudoku Leicht', 'heading-level': null, 'start-actions': 'back archive', 'end-actions': 'theme more', 'disabled-actions': '', 'back-href': '#playground' },
     props: {

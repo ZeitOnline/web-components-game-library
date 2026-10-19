@@ -7,6 +7,9 @@
 
   let { data } = $props();
   const c = $derived(data.component);
+  // Written content from content/components/<slug>.md (Markdown rendered at build time, trusted).
+  const content = $derived(data.content);
+  const editUrl = $derived(`/admin/index.html#/collections/components/entries/${c.slug}`);
   const importLine = $derived(`import '${c.importPath}';`);
   const sourceUrl = $derived(`https://github.com/ZeitOnline/web-components-game-library/blob/main/${c.file}`);
 
@@ -41,7 +44,7 @@
   <div class="crumb"><a href={resolve('/')}>Components</a> / {c.category}</div>
   <h1>{c.name}</h1>
   <code class="tag-name">&lt;{c.tag}&gt;</code>
-  <p class="lead">{c.summary}</p>
+  <p class="lead">{@html content.summary}</p>
   <ul class="status-line" aria-label="Facts">
     <li>
       <span class="status-dot status-dot--ok" aria-hidden="true"></span>
@@ -59,6 +62,7 @@
   <div class="actions">
     <CopyButton text={importLine} class="action action--mono">{importLine}</CopyButton>
     <a class="action" href={sourceUrl}>Source <span aria-hidden="true">↗</span></a>
+    <a class="action" href={editUrl} data-sveltekit-reload title="Sveltia CMS, local repository">Edit content</a>
   </div>
 
   <section class="section" id="playground" aria-labelledby="h-pg">
@@ -83,24 +87,26 @@
     <div class="dos">
       <div>
         <h3>When to use</h3>
-        <!-- Definition texts are trusted (repo content). -->
-        <ul>{#each c.usage.when as t, i (i)}<li>{@html t}</li>{/each}</ul>
+        <ul>{#each content.when as t, i (i)}<li>{@html t}</li>{/each}</ul>
       </div>
       <div>
         <h3>When not to use</h3>
-        <ul>{#each c.usage.whenNot as t, i (i)}<li>{@html t}</li>{/each}</ul>
+        <ul>{#each content.whenNot as t, i (i)}<li>{@html t}</li>{/each}</ul>
       </div>
     </div>
-    {#if c.usage.faq.length}
+    {#if content.faq.length}
       <h3>FAQ</h3>
       <div class="faq">
-        {#each c.usage.faq as f, i (i)}
+        {#each content.faq as f, i (i)}
           <details>
-            <summary>{f.q}</summary>
-            <p>{@html f.a}</p>
+            <summary><span>{@html f.question}</span></summary>
+            <div class="faq__answer">{@html f.answer}</div>
           </details>
         {/each}
       </div>
+    {/if}
+    {#if content.notes}
+      <div class="prose-long notes">{@html content.notes}</div>
     {/if}
   </section>
 
@@ -182,7 +188,7 @@
     <h2 id="h-a11y">Accessibility</h2>
     <div class="panel">
       <ul class="checklist">
-        {#each c.a11y as a (a.topic)}<li><strong>{a.topic}</strong><span>{a.text}</span></li>{/each}
+        {#each content.a11y as a, i (i)}<li><strong>{a.topic}</strong><span>{@html a.text}</span></li>{/each}
       </ul>
     </div>
   </section>
@@ -210,7 +216,7 @@
     <p>The copies in the games this component is meant to replace.</p>
     <div class="panel">
       <ul class="checklist origin">
-        {#each c.replaces as r, i (i)}<li><span>{@html r}</span></li>{/each}
+        {#each content.replaces as r, i (i)}<li><span>{@html r}</span></li>{/each}
       </ul>
     </div>
   </section>
@@ -240,6 +246,9 @@
 </aside>
 
 <style>
+  .notes {
+    margin-top: 24px;
+  }
   .api-note {
     margin-top: 12px;
   }

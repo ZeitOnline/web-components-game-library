@@ -1,12 +1,14 @@
 <!-- Small, inert live render of a component for the overview cards. -->
 <script>
   import { onMount } from 'svelte';
-  import { mount } from './markup.js';
+  import { elementHTML, mount } from './markup.js';
 
   /** @type {{ component: import('./components/types').ComponentDef }} */
   let { component } = $props();
   /** @type {HTMLElement | undefined} */
   let host = $state();
+  // svelte-ignore state_referenced_locally
+  const initialMarkup = component.card ? '' : elementHTML(component, component.playground.values);
 
   onMount(() => {
     if (!component.card && host) mount(host, component, $state.snapshot(component.playground.values));
@@ -18,7 +20,7 @@
     <!-- Static preview from the definition (trusted). -->
     {@html component.card}
   {:else}
-    <div class="preview" class:preview--center={component.playground.layout !== 'fill'} style:zoom={component.cardZoom ?? 1} bind:this={host}></div>
+    <div class="preview" class:preview--center={component.playground.layout !== 'fill'} style:zoom={component.cardZoom ?? 1} bind:this={host}>{@html initialMarkup}</div>
   {/if}
 </div>
 

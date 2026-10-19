@@ -142,7 +142,7 @@ export class ZonGameDialog extends ZonElement {
     this.root.innerHTML = `
       <dialog part="dialog" aria-labelledby="title">
         <div class="inner" part="inner">
-          <button class="zon-button zon-button--icon close" part="close-button" type="button">${icons.close(18)}</button>
+          <button class="zon-button zon-button--icon zon-button--small close" part="close-button" type="button">${icons.close(18)}</button>
           <div class="title" id="title" part="title" tabindex="-1"><slot name="title"></slot></div>
           <div class="content" part="content"><slot></slot></div>
           <div class="footer" part="footer"><slot name="footer"></slot></div>

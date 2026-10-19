@@ -4,7 +4,7 @@
  * Everything that has to look right BEFORE the JavaScript runs:
  *
  * 1. Skeletons for the shadow-DOM components that are visible on load
- *    (`zon-game-hero`, `zon-puzzle-list`, `zon-game-faq`). Plain HTML + CSS, so they
+ *    (`zon-game-hero`, `zon-puzzle-list`, `zon-game-faq`, `zon-game-feedback-button`). Plain HTML + CSS, so they
  *    paint together with the frame. They copy the components' sizes and breakpoints,
  *    so swapping skeleton → component doesn't move the page.
  * 2. The styles of `<zon-game-faq>`, which renders into the light DOM (SEO), so its
@@ -72,6 +72,13 @@ zon-game-faq {
  */
 zon-game-hero:not(:defined),
 zon-puzzle-list:not(:defined) { display: block; width: 100%; }
+
+/* Slotted content (e.g. the hero artwork) only belongs inside the shadow root. Until the
+   element is defined it would render as plain content: a full-size image under the
+   skeleton that also stretches the page column. Hide it; the skeleton stands in. */
+:is(zon-game-hero, zon-game-result, zon-game-navigation, zon-game-instructions):not(:defined) > [slot] {
+  display: none;
+}
 
 /* Dialogs are never visible on load; don't flash their content before upgrade. */
 zon-game-dialog:not(:defined) { display: none; }
@@ -177,6 +184,54 @@ zon-game-dialog:not(:defined) { display: none; }
   height: var(--z-ds-fontsize-22, 22px);
   border-radius: var(--_sk-radius);
   background: var(--_sk-bone);
+}
+
+/* --- <zon-game-button> ------------------------------------------------------ */
+
+/* Before the script runs, the label is plain text: give it the button's box, so the
+   swap doesn't move anything (sizes from .zon-button in shared/styles.js). */
+zon-game-button:not(:defined) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--z-ds-space-xs, 8px);
+  box-sizing: border-box;
+  height: 40px;
+  min-width: 80px;
+  padding: 0 var(--z-ds-space-m, 16px);
+  font-size: var(--z-ds-fontsize-16, 16px);
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: middle;
+}
+zon-game-button[size='small']:not(:defined) { height: 32px; font-size: var(--z-ds-fontsize-14, 14px); }
+zon-game-button[variant='icon']:not(:defined) { width: 43px; height: 43px; min-width: 0; padding: 0; overflow: hidden; color: transparent; }
+zon-game-button[variant='icon'][size='small']:not(:defined) { width: 32px; height: 32px; }
+
+/* --- <zon-game-feedback-button> -------------------------------------------- */
+
+/* Reserves the button's height even without skeleton markup (same box as :host). */
+zon-game-feedback-button:not(:defined) {
+  display: flex;
+  justify-content: center;
+  min-height: 50px;
+}
+/* Optional visible placeholder: the yellow pill, shimmering. Width is an estimate of
+   the label; only the height has to match, the row is centred. */
+.zon-skeleton--feedback-button {
+  display: flex;
+  justify-content: center;
+}
+.zon-skeleton--feedback-button .zon-skeleton__button {
+  width: var(--zon-skeleton-width, 280px);
+  max-width: 100%;
+  height: 50px;
+  border-radius: 25px;
+  --_sk-bone: var(--z-ds-color-games-yellow-base, #ffc925);
+  --_sk-shine: rgba(255, 255, 255, 0.6);
+}
+@media print {
+  zon-game-feedback-button { display: none; }
 }
 
 /* --- <zon-game-faq> (light DOM) ---------------------------------------------- */

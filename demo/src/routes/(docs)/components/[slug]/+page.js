@@ -5,8 +5,8 @@ export const entries = () => COMPONENTS.map(({ slug }) => ({ slug }));
 
 // Universal load: the definitions contain functions (playground actions), which
 // cannot be serialized from a server load.
-export const load = ({ params }) => {
+export const load = ({ params, data }) => {
   const component = findComponent(params.slug);
   if (!component) error(404, 'Unknown component');
-  return { component };
+  return { ...data, component };
 };

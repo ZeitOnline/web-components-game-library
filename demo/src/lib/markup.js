@@ -40,13 +40,14 @@ const indent = (/** @type {string} */ text, pad = '  ') =>
 /**
  * `<tag a="b">…</tag>`, attributes on one line or wrapped when long.
  * @param {ComponentDef} def @param {Values} values @param {string[]} [extra] framework bindings
+ * @param {string} [html] light DOM content (default: the definition's)
  */
-export function elementHTML(def, values, extra = []) {
+export function elementHTML(def, values, extra = [], html = def.playground.html) {
   const attrs = [...attrList(def, values), ...extra];
   const oneLine = `<${def.tag}${attrs.map((a) => ' ' + a).join('')}>`;
   const open =
     oneLine.length <= 80 || attrs.length < 2 ? oneLine : `<${def.tag}\n${attrs.map((a) => '  ' + a).join('\n')}\n>`;
-  const body = def.playground.html ? `\n${indent(def.playground.html)}\n` : '';
+  const body = html ? `\n${indent(html)}\n` : '';
   return `${open}${body}</${def.tag}>`;
 }
 
@@ -72,16 +73,29 @@ export function readValue(/** @type {HTMLElement} */ el, /** @type {ComponentDef
   return raw;
 }
 
+/** @typedef {{ html?: string, props?: Record<string, unknown> }} Content light DOM and properties, when not the definition's */
+
 /**
- * Renders the component into `host` once it is defined and sets its properties.
- * @param {HTMLElement} host @param {ComponentDef} def @param {Values} values
+ * The component in `host`: adopts the server-rendered element if there is one (no layout
+ * shift: critical.css reserves its space before the script runs), otherwise renders it.
+ * Properties are set once the element is defined.
+ * @param {HTMLElement} host @param {ComponentDef} def @param {Values} values @param {Content} [content]
  */
-export async function mount(host, def, values) {
+export async function mount(host, def, values, content = {}) {
+  let el = /** @type {HTMLElement | null} */ (host.querySelector(def.tag));
+  if (!el) {
+    host.innerHTML = elementHTML(def, values, [], content.html ?? def.playground.html);
+    el = /** @type {HTMLElement} */ (host.querySelector(def.tag));
+  }
   await customElements.whenDefined(def.tag);
-  host.innerHTML = elementHTML(def, values);
-  const el = /** @type {HTMLElement} */ (host.querySelector(def.tag));
-  Object.assign(el, structuredCloneSafe(def.playground.props ?? {}));
+  Object.assign(el, structuredCloneSafe(content.props ?? def.playground.props ?? {}));
   return el;
+}
+
+/** Swaps light DOM and properties on a live element (e.g. another game picked). @param {HTMLElement} el @param {Content} content */
+export function applyContent(el, content) {
+  if (content.html !== undefined && el.innerHTML !== content.html) el.innerHTML = content.html;
+  if (content.props) Object.assign(el, structuredCloneSafe(content.props));
 }
 
 /** Fresh copies per instance, so one stage cannot mutate another's data. Functions stay. */
@@ -98,9 +112,8 @@ export function toJs(/** @type {unknown} */ value) {
     .replace(/"/g, "'");
 }
 
-/** @param {ComponentDef} def */
-function propEntries(def) {
-  const props = def.playground.props ?? {};
+/** @param {ComponentDef} def @param {Record<string, unknown>} [props] */
+function propEntries(def, props = def.playground.props ?? {}) {
   return Object.keys(props).map((name) => ({
     name,
     code: def.playground.propsCode?.[name] ?? toJs(props[name]),
@@ -111,20 +124,26 @@ function propEntries(def) {
 const firstEvent = (/** @type {ComponentDef} */ def) => def.events.find((e) => e.name !== 'zon-track');
 const camel = (/** @type {string} */ s) => s.replace(/-(\w)/g, (_, c) => c.toUpperCase());
 
-/** @param {ComponentDef} def @param {Values} values */
-export function snippets(def, values) {
-  const props = propEntries(def);
+/** Inline SVG artwork shortened in code samples: the markup, not the drawing, is the point. */
+const shortenSvg = (/** @type {string | undefined} */ html) => html?.replace(/(<svg\b[^>]*>)[\s\S]*?<\/svg>/g, '$1…</svg>');
+
+/** @param {ComponentDef} def @param {Values} values @param {Content} [content] */
+export function snippets(def, values, content = {}) {
+  const props = propEntries(def, content.props);
+  const html = shortenSvg(content.html ?? def.playground.html);
   const event = firstEvent(def);
   const handlerName = event ? 'on' + camel(event.name.replace(/^zon-/, '-')) : '';
 
   // Plain HTML + a module script, as on a static page.
+  // Components used inside the example (e.g. a button in a dialog footer) are imported too.
+  const imports = [def.importPath, ...(def.playground.imports ?? [])];
   const htmlScript = [
-    `import '${def.importPath}';`,
+    ...imports.map((i) => `import '${i}';`),
     ...(props.length || event ? ['', `const el = document.querySelector('${def.tag}');`] : []),
     ...props.map((p) => `el.${p.name} = ${p.code};`),
     ...(event ? [`el.addEventListener('${event.name}', (e) => console.log(e.detail));`] : []),
   ];
-  const html = `${elementHTML(def, values)}\n\n<script type="module">\n${indent(htmlScript.join('\n'))}\n</script>`;
+  const plain = `${elementHTML(def, values, [], html)}\n\n<script type="module">\n${indent(htmlScript.join('\n'))}\n</script>`;
 
   // Svelte 5: client-only import; object props are set as properties.
   const stringProps = props.filter((p) => !p.isObject);
@@ -138,11 +157,11 @@ export function snippets(def, values) {
   const svelteScript = [
     "import { onMount } from 'svelte';",
     ...(stringProps.length ? ["import { props } from '$lib/props.js'; // see the Frameworks guide"] : []),
-    `onMount(() => import('${def.importPath}'));`,
+    ...imports.map((i) => `onMount(() => import('${i}'));`),
     ...(props.length ? [''] : []),
     ...props.map((p) => `const ${p.name} = ${p.code};`),
   ];
-  const svelte = `<script>\n${indent(svelteScript.join('\n'))}\n</script>\n\n${elementHTML(def, values, svelteBindings)}`;
+  const svelte = `<script>\n${indent(svelteScript.join('\n'))}\n</script>\n\n${elementHTML(def, values, svelteBindings, html)}`;
 
   // Angular: CUSTOM_ELEMENTS_SCHEMA, property and event bindings.
   const angularBindings = [
@@ -150,7 +169,7 @@ export function snippets(def, values) {
     ...(event ? [`(${event.name})="${handlerName}($event)"`] : []),
   ];
   const angularTs = [
-    `// main.ts\nimport '${def.importPath}';`,
+    `// main.ts\n${imports.map((i) => `import '${i}';`).join('\n')}`,
     '',
     '// component',
     '@Component({',
@@ -163,7 +182,7 @@ export function snippets(def, values) {
     ...(event ? [`  ${handlerName}(event: CustomEvent) { console.log(event.detail); }`] : []),
     '}',
   ];
-  const angular = `<!-- game.component.html -->\n${elementHTML(def, values, angularBindings)}\n\n${angularTs.join('\n')}`;
+  const angular = `<!-- game.component.html -->\n${elementHTML(def, values, angularBindings, html)}\n\n${angularTs.join('\n')}`;
 
-  return { html, svelte, angular };
+  return { html: plain, svelte, angular };
 }

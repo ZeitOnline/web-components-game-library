@@ -5,18 +5,20 @@ export interface AttributeDef {
   options?: (string | null)[];
   default?: string;
   description: string;
+  /** playground: placeholder of the text field */
+  placeholder?: string;
   /** false: documented only, no playground control */
   control?: false;
+  /** playground: a select of the games in content/games (see games.js) */
+  game?: true;
 }
 
+/** API and playground. The written content (summary, usage, FAQ, a11y, replaces) is in content/components/<slug>.md. */
 export interface ComponentDef {
   slug: string;
   tag: string;
   name: string;
   category: string;
-  summary: string;
-  /** game code this component replaces (trusted HTML) */
-  replaces: string[];
   dom?: 'shadow' | 'light';
   /** skeleton modifier in critical.css, e.g. "hero" */
   skeleton?: string | null;
@@ -27,14 +29,14 @@ export interface ComponentDef {
   slots: { name: string; description: string }[];
   parts: { name: string; description: string }[];
   cssProps: { name: string; description: string }[];
-  a11y: { topic: string; text: string }[];
   tracking: { when: string; payload: string }[];
-  usage: { when: string[]; whenNot: string[]; faq: { q: string; a: string }[] };
   playground: {
     /** initial attribute values; one control per key */
     values: Record<string, string | boolean | null>;
     /** light DOM content (trusted) */
     html?: string;
+    /** the light DOM is plain text: show a "text" control that edits it (e.g. a button label) */
+    text?: boolean;
     /** complex data set as properties */
     props?: Record<string, unknown>;
     /** how a prop is shown in snippets, when JSON does not fit (functions) */
@@ -46,7 +48,17 @@ export interface ComponentDef {
     /** events whose default action is prevented on the stage (navigation) */
     prevent?: string[];
     note?: string;
+    /** other entry points the example uses, added to the snippets' imports */
+    imports?: string[];
+    /** docs only: stage height kept until the element is defined (components without a skeleton) */
+    reserve?: string;
     inspect?: { label: string; read: (el: HTMLElement) => string };
+    /** what picking a game in the `game-name` select changes besides the name */
+    game?: (game: import('../games.js').Game) => {
+      values?: Record<string, string | boolean | null>;
+      html?: string;
+      props?: Record<string, unknown>;
+    };
   };
   anatomy?: boolean;
   /** static overview-card preview instead of a live element */

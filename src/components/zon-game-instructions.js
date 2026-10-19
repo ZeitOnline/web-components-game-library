@@ -31,7 +31,8 @@ import { icons } from '../shared/icons.js';
 const sheet = css`
 :host { display: block; }
 .top { min-height: 44px; display: flex; align-items: center; }
-.top .zon-button { padding-inline: 0; }
+.top .zon-button { padding-inline: 0; margin-inline: 0; }
+.zon-button--text { text-decoration: underline; }
 
 .slide {
   display: flex;

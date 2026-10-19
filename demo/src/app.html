@@ -3,7 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="data:," />
+    <!-- Text fonts load with the first paint, so text does not re-flow when they arrive. -->
+    <link rel="preload" href="/fonts/TabletGothic-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/TabletGothic-Bold.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- ZEIT favicon, copied from static.zeit.de/p/zeit.web/icons (as linked by sudoku and Wortgeflecht). -->
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <script>
       // Same convention as the ZON frame: html.color-scheme-dark / -light override the system setting.
       try {

@@ -1,0 +1,134 @@
+# Sveltia CMS for the game components docs. LOCAL ONLY for now: open /admin/index.html on
+# the dev server, choose "Work with Local Repository" and select the repository root.
+# Sveltia edits the files on disk; review and commit them with git as usual.
+#
+# Paths are relative to the repository root. What is editable here is the written content;
+# the API, playground and tracking stay in code (demo/src/lib/components/<slug>.js), so they
+# cannot drift from the components.
+backend:
+  # Required by Sveltia, but not used in local mode (nothing is pushed).
+  name: github
+  repo: ZeitOnline/web-components-game-library
+  branch: main
+
+media_folder: demo/static/media
+public_folder: /media
+
+collections:
+  - name: guides
+    label: Guides
+    label_singular: Guide
+    description: Pages under “Guides”. New guides appear in the side navigation, sorted by Order.
+    folder: demo/content/guides
+    extension: md
+    format: frontmatter
+    create: true
+    slug: '{{slug}}'
+    summary: '{{order}} · {{title}}'
+    sortable_fields: [order, title]
+    editor: { preview: false }
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: summary, label: Summary, widget: string, hint: One sentence for overviews. }
+      - { name: order, label: Order, widget: number, value_type: int, default: 99 }
+      - name: body
+        label: Content
+        widget: markdown
+        hint: 'Link to another guide with ./<slug>.md, e.g. ./skeletons.md. Use ## headings: they become “On this page”.'
+
+  - name: games
+    label: Games
+    label_singular: Game
+    description: >-
+      Every game with its logo and 18×18 mini mark, as SVG code. They feed the Game icons page and the
+      game-name selects in the playgrounds. This repo is the source of these icons.
+    folder: demo/content/games
+    extension: yml
+    format: yaml
+    create: true
+    slug: '{{slug}}'
+    identifier_field: name
+    summary: '{{name}} · {{category}}'
+    sortable_fields: [order, name, category]
+    editor: { preview: false }
+    fields:
+      - { name: name, label: Name, widget: string }
+      - name: category
+        label: Category
+        widget: select
+        hint: Picks the frame colours (--z-ds-color-games-<category>-*).
+        options:
+          - { label: Logic, value: logic }
+          - { label: Word, value: word }
+          - { label: Crossword, value: crossword }
+          - { label: Quiz, value: quiz }
+          - { label: Minigames, value: mini }
+      - { name: subcategory, label: Subcategory, widget: string, hint: 'e.g. Zahlenrätsel, Mini-Kreuzworträtsel' }
+      - { name: href, label: Link, widget: string, required: false }
+      - { name: order, label: Order, widget: number, value_type: int, default: 999, hint: Position in lists; steps of 10 leave room. }
+      - { name: feedbackForm, label: Typeform id, widget: string, required: false, hint: 'For <zon-game-feedback-button>, e.g. obbQ8AeR.' }
+      - name: logo
+        label: Logo (SVG)
+        widget: code
+        default_language: html
+        allow_language_selection: false
+        output_code_only: true
+        hint: 'viewBox="0 0 120 120", no fixed width/height. Shown on the game cards and as the hero artwork.'
+      - name: mini
+        label: Mini mark (SVG)
+        widget: code
+        default_language: html
+        allow_language_selection: false
+        output_code_only: true
+        required: false
+        hint: 'viewBox="0 0 18 18". Frame navigation and the 36px puzzle-list tile. Empty: the logo is scaled down.'
+
+  - name: components
+    label: Components
+    label_singular: Component
+    description: The written parts of each component page. New components start in code (src/components + demo/src/lib/components).
+    folder: demo/content/components
+    extension: md
+    format: frontmatter
+    create: false
+    delete: false
+    slug: '{{slug}}'
+    summary: '{{slug}}'
+    editor: { preview: false }
+    fields:
+      - name: summary
+        label: Summary
+        widget: text
+        hint: 'Lead text on the component page and its overview card. Markdown: `code`, **bold**, [links](…).'
+      - name: when
+        label: When to use
+        widget: list
+        field: { name: item, label: Point, widget: string }
+      - name: whenNot
+        label: When not to use
+        widget: list
+        field: { name: item, label: Point, widget: string }
+      - name: faq
+        label: FAQ
+        widget: list
+        summary: '{{fields.question}}'
+        fields:
+          - { name: question, label: Question, widget: string }
+          - { name: answer, label: Answer, widget: markdown }
+      - name: a11y
+        label: Accessibility
+        widget: list
+        summary: '{{fields.topic}}'
+        fields:
+          - { name: topic, label: Topic, widget: string }
+          - { name: text, label: Description, widget: string }
+      - name: replaces
+        label: Replaces
+        widget: list
+        hint: Copies in the games this component replaces, e.g. sudoku `game/stop-watch`.
+        field: { name: item, label: Game code, widget: string }
+      - name: body
+        label: Additional notes
+        widget: markdown
+        required: false
+        hint: Optional. Shown under Usage, after the FAQ.

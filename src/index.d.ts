@@ -32,6 +32,13 @@ export declare class ZonGameNavigation extends HTMLElement {
   setExpanded(action: string, expanded: boolean): void;
   setDisabled(action: string, disabled: boolean): void;
 }
+export declare class ZonGameFeedbackButton extends HTMLElement {
+  /** Typeform hidden fields, e.g. { difficulty: 'leicht' } */
+  hiddenFields: Record<string, string>;
+  open(): Promise<void>;
+  close(): void;
+}
+export declare class ZonGameButton extends HTMLElement {}
 export declare function formatTime(ms: number): string;
 export declare function connectTracking(options?: {
   target?: EventTarget;
@@ -41,6 +48,7 @@ export declare function connectTracking(options?: {
 
 declare global {
   interface HTMLElementTagNameMap {
+    'zon-game-button': ZonGameButton;
     'zon-game-dialog': ZonGameDialog;
     'zon-game-instructions': ZonGameInstructions;
     'zon-game-timer': ZonGameTimer;
@@ -49,5 +57,6 @@ declare global {
     'zon-puzzle-list': ZonPuzzleList;
     'zon-game-navigation': ZonGameNavigation;
     'zon-game-faq': ZonGameFaq;
+    'zon-game-feedback-button': ZonGameFeedbackButton;
   }
 }

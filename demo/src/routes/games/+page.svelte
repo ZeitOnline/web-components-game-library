@@ -14,6 +14,7 @@
   import { connectTracking } from '@zeitonline/game-components/tracking';
   import { resolve } from '$app/paths';
   import { GAMES } from '$lib/games-data.js';
+  import { gameById, heroArt as artFor, tileIcon } from '$lib/games.js';
   import { props } from '$lib/props.js';
 
   /** @typedef {typeof GAMES.sudoku} Game */
@@ -85,8 +86,10 @@
   const archiveItems = $derived(
     today ? Array.from({ length: 10 }, (_, i) => puzzle(i + 1, i > 6 ? { status: 'locked' } : {})) : [],
   );
-  // The artwork itself is the slotted element, so the hero can size it.
-  const heroArt = $derived(game.heroArt.replace(/^<(\w+)/, '<$1 slot="image"'));
+  // Logo and tile icon from content/games (same SVGs as the docs).
+  const entry = $derived(gameById(game.id));
+  const art = $derived(artFor(entry));
+  const icon = $derived(tileIcon(entry));
   const gameDate = $derived(
     currentDate
       ? `${game.name} · ${new Intl.DateTimeFormat('de-DE', { weekday: 'long', day: 'numeric', month: 'short' }).format(new Date(currentDate + 'T12:00'))}`
@@ -223,13 +226,15 @@
 <svelte:head><title>{game.name} · Demo</title></svelte:head>
 
 <div class="frame-bar">
-  <a class="brand" href={resolve('/')}>← Docs</a>
-  <nav class="game-switch" aria-label="Spiel wählen">
-    {#each Object.values(GAMES) as g (g.id)}
-      <a href="?game={g.id}" aria-current={g.id === game.id ? 'page' : undefined} onclick={(e) => switchGame(e, g.id)}>{g.name}</a>
-    {/each}
-  </nav>
-  <button class="theme" type="button" onclick={toggleTheme}>Dark mode</button>
+  <div class="frame-bar__inner">
+    <a class="brand" href={resolve('/')}>← Docs</a>
+    <nav class="game-switch" aria-label="Spiel wählen">
+      {#each Object.values(GAMES) as g (g.id)}
+        <a href="?game={g.id}" aria-current={g.id === game.id ? 'page' : undefined} onclick={(e) => switchGame(e, g.id)}>{g.name}</a>
+      {/each}
+    </nav>
+    <button class="theme" type="button" onclick={toggleTheme}>Dark mode</button>
+  </div>
 </div>
 
 {#if !currentDate}
@@ -244,8 +249,7 @@
       state={heroState}
       badge-label={game.hero.badge[heroState]}
       cta-label={game.hero.cta[heroState]}
-      style:--zon-hero-art-width={game.heroArtWidth?.[0]}
-      style:--zon-hero-art-width-wide={game.heroArtWidth?.[1]}
+      style={art.style}
       onzon-start={(/** @type {CustomEvent} */ e) => {
         if (e.detail.state === 'new' && !rulesSeen()) {
           // First visit: show the rules before the first puzzle (both games do this).
@@ -273,14 +277,14 @@
         </div>
       </div>
       <!-- Artwork from games-data.js (trusted). -->
-      {@html heroArt}
+      {@html art.html}
     </zon-game-hero>
 
     <zon-puzzle-list
       category={game.category}
       heading={game.listHeading}
       game-name={game.name}
-      {@attach props({ items: moreItems, icon: game.tileIcon })}
+      {@attach props({ items: moreItems, icon })}
       onzon-show-all={(/** @type {CustomEvent} */ e) => {
         e.preventDefault();
         archive.show();
@@ -311,6 +315,12 @@
         {/each}
       </zon-game-faq>
     {/key}
+
+    {#if 'feedbackForm' in game}
+      <zon-game-feedback-button class="feedback" form-id={game.feedbackForm} game-name={game.name}>
+        <div class="zon-skeleton zon-skeleton--feedback-button" aria-hidden="true"><span class="zon-skeleton__bone zon-skeleton__button"></span></div>
+      </zon-game-feedback-button>
+    {/if}
   </main>
 {:else}
   <!-- Fake game page (route "#/<game>/<date>") -->
@@ -343,7 +353,7 @@
           {/each}
         {/if}
       </div>
-      <button class="solve" type="button" onclick={solve}>Rätsel lösen (Demo)</button>
+      <zon-game-button onclick={solve}>Rätsel lösen (Demo)</zon-game-button>
     </section>
 
     {#if result}
@@ -386,7 +396,7 @@
     all-label=""
     category={game.category}
     game-name={game.name}
-    {@attach props({ items: archiveItems, icon: game.tileIcon })}
+    {@attach props({ items: archiveItems, icon })}
     onzon-puzzle-select={(/** @type {CustomEvent} */ e) => {
       if (e.detail.item.status === 'locked') {
         e.preventDefault();
@@ -401,21 +411,21 @@
 <zon-game-dialog id="more-menu" variant="drawer" bind:this={moreMenu}>
   <h2 slot="title">Mehr</h2>
   <div class="more-links">
-    <button
-      type="button"
+    <zon-game-button
+      variant="secondary"
       onclick={() => {
         moreMenu.close('navigate');
         instructions.step = 0;
         rules.show();
-      }}>Spielregeln</button
+      }}>Spielregeln</zon-game-button
     >
-    <button
-      type="button"
+    <zon-game-button
+      variant="secondary"
       onclick={() => {
         moreMenu.close('navigate');
         openGame(/** @type {string} */ (currentDate));
         notify('Rätsel zurückgesetzt');
-      }}>Rätsel zurücksetzen</button
+      }}>Rätsel zurücksetzen</zon-game-button
     >
   </div>
 </zon-game-dialog>
@@ -430,14 +440,24 @@
     position: sticky;
     top: 0;
     z-index: 10;
+    background: var(--z-ds-color-background-0);
+    border-bottom: 1px solid var(--z-ds-color-border-70);
+  }
+  /* Same width and side padding as the docs header (.site-header__inner). */
+  .frame-bar__inner {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 16px;
-    background: var(--z-ds-color-background-0);
-    border-bottom: 1px solid var(--z-ds-color-border-70);
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 10px 24px;
+  }
+  @media (max-width: 800px) {
+    .frame-bar__inner {
+      padding: 10px 12px;
+    }
   }
   .brand {
     font-weight: 800;
@@ -477,6 +497,10 @@
     display: grid;
     gap: 40px;
   }
+  /* The games put 52px above the survey button (main already has a 40px gap). */
+  .feedback {
+    margin-top: 12px;
+  }
   .game-page {
     gap: 16px;
     padding-top: 8px;
@@ -500,13 +524,6 @@
   .more-links {
     display: grid;
     gap: 8px;
-  }
-  .more-links button {
-    text-align: left;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid var(--z-ds-color-border-70);
-    background: none;
   }
   .board {
     width: min(100%, 360px);
@@ -548,14 +565,6 @@
   .board[data-game='wortgeflecht'] span.found {
     background: #d6d5f4;
     color: #252525;
-  }
-  .solve {
-    font-weight: 700;
-    padding: 12px 24px;
-    border: 0;
-    border-radius: 8px;
-    background: #000;
-    color: #fff;
   }
   .toast {
     position: fixed;
