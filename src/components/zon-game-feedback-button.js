@@ -17,6 +17,9 @@
  *   medium      Typeform `medium` (default "snippet", as in the games)
  *   embed-src   URL of the embed SDK (default https://embed.typeform.com/next/embed.js),
  *               e.g. a self-hosted copy like sudoku's assets/scripts/embed.js
+ *   embed-css   URL of the popup stylesheet (default https://embed.typeform.com/next/css/popup.css).
+ *               createPopup() does not inject it (only embed.js's data-tf-popup scan does), and
+ *               without it the popup renders unstyled at the end of <body>, i.e. invisible.
  *
  * Properties
  *   hiddenFields   { [name]: string } Typeform hidden fields, e.g. { difficulty: 'leicht' }
@@ -33,6 +36,7 @@
 import { ZonElement, css, define, escapeHtml } from '../shared/base.js';
 
 const DEFAULT_SDK = 'https://embed.typeform.com/next/embed.js';
+const DEFAULT_CSS = 'https://embed.typeform.com/next/css/popup.css';
 
 /** @type {Promise<any> | undefined} */
 let sdk;
@@ -52,6 +56,35 @@ function loadTypeform(src) {
     throw err;
   });
   return sdk;
+}
+
+/** @type {Map<string, Promise<void>>} */
+const stylesheets = new Map();
+
+/**
+ * Adds the popup stylesheet to the document once (or reuses one the page already has,
+ * e.g. from embed.js's own data-tf-popup initializer).
+ */
+function loadStylesheet(href) {
+  if (stylesheets.has(href)) return stylesheets.get(href);
+  const existing = document.querySelector(`link[rel="stylesheet"][href="${CSS.escape(href)}"]`);
+  const promise = existing?.sheet
+    ? Promise.resolve()
+    : new Promise((resolve, reject) => {
+        const link = existing ?? document.createElement('link');
+        link.addEventListener('load', () => resolve(), { once: true });
+        link.addEventListener('error', () => reject(new Error(`Could not load ${href}`)), { once: true });
+        if (!existing) {
+          link.rel = 'stylesheet';
+          link.href = href;
+          document.head.append(link);
+        }
+      }).catch((err) => {
+        stylesheets.delete(href); // allow a retry
+        throw err;
+      });
+  stylesheets.set(href, promise);
+  return promise;
 }
 
 const sheet = css`
@@ -89,7 +122,7 @@ const sheet = css`
 
 export class ZonGameFeedbackButton extends ZonElement {
   static sheet = sheet;
-  static observedAttributes = ['form-id', 'game-name', 'label', 'medium', 'embed-src'];
+  static observedAttributes = ['form-id', 'game-name', 'label', 'medium', 'embed-src', 'embed-css'];
 
   #hiddenFields = {};
   #popup = null;
@@ -97,7 +130,7 @@ export class ZonGameFeedbackButton extends ZonElement {
   constructor() {
     super();
     // Warm up: start loading the SDK as soon as the user is likely to click.
-    const preload = () => this.#formId && loadTypeform(this.#sdkSrc).catch(() => {});
+    const preload = () => this.#formId && this.#loadAssets().catch(() => {});
     this.root.addEventListener('pointerenter', preload, true);
     this.root.addEventListener('focusin', preload);
     this.root.addEventListener('click', (e) => {
@@ -141,6 +174,16 @@ export class ZonGameFeedbackButton extends ZonElement {
     return this.getAttribute('embed-src') || DEFAULT_SDK;
   }
 
+  get #cssHref() {
+    return this.getAttribute('embed-css') || DEFAULT_CSS;
+  }
+
+  /** SDK + popup stylesheet, in parallel. Resolves to window.tf. */
+  async #loadAssets() {
+    const [tf] = await Promise.all([loadTypeform(this.#sdkSrc), loadStylesheet(this.#cssHref)]);
+    return tf;
+  }
+
   /** Public form URL with hidden fields (Typeform reads them from the hash). */
   get #href() {
     const hidden = new URLSearchParams(Object.entries(this.#hiddenFields).map(([k, v]) => [k, String(v)])).toString();
@@ -154,7 +197,7 @@ export class ZonGameFeedbackButton extends ZonElement {
     const button = this.root.querySelector('.button');
     button?.setAttribute('aria-busy', 'true');
     try {
-      const tf = await loadTypeform(this.#sdkSrc);
+      const tf = await this.#loadAssets();
       this.#popup ??= tf.createPopup(formId, {
         medium: this.getAttribute('medium') || 'snippet',
         iframeProps: { title: this.label('game-name', 'Feedback') },
@@ -164,7 +207,7 @@ export class ZonGameFeedbackButton extends ZonElement {
       });
       this.#popup.open();
     } catch (err) {
-      // SDK blocked or offline: fall back to the form itself.
+      // SDK or stylesheet blocked or offline: fall back to the form itself.
       console.warn('<zon-game-feedback-button>:', err);
       window.open(this.#href, '_blank', 'noopener');
     } finally {
