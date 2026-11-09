@@ -11,6 +11,7 @@ export default {
     { name: 'label', type: 'text', description: 'Overrides the label, e.g. “Zur Umfrage”.' },
     { name: 'medium', type: 'text', default: 'snippet', description: 'Typeform <code>medium</code>, as in the games.' },
     { name: 'embed-src', type: 'text', default: 'https://embed.typeform.com/next/embed.js', description: 'URL of the embed SDK, e.g. a self-hosted copy like sudoku’s <code>assets/scripts/embed.js</code>.' },
+    { name: 'embed-css', type: 'text', default: 'https://embed.typeform.com/next/css/popup.css', description: 'URL of the Typeform popup stylesheet, loaded together with the SDK.' },
   ],
   properties: [
     { name: 'hiddenFields', type: 'Record<string, string>', description: 'Typeform hidden fields, e.g. <code>{ difficulty: \'leicht\' }</code>. Only fields defined in the form are stored.' },
@@ -29,7 +30,7 @@ export default {
   cssProps: [],
   tracking: [{ when: 'Click', payload: "{ event: 'game_interaction', action: 'click', target: 'feedback', position: 'survey' }" }],
   playground: {
-    values: { 'form-id': 'obbQ8AeR', 'game-name': 'Sudoku', label: '', medium: '', 'embed-src': '' },
+    values: { 'form-id': 'obbQ8AeR', 'game-name': 'Sudoku', label: '', medium: '', 'embed-src': '', 'embed-css': '' },
     // Skeleton from critical.css: shown until the element is defined (hidden here, it already is).
     html: '<div class="zon-skeleton zon-skeleton--feedback-button" aria-hidden="true"><span class="zon-skeleton__bone zon-skeleton__button"></span></div>',
     // Test clicks on this page should not open (and count views on) the real Sudoku survey.
