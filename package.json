@@ -1,6 +1,6 @@
 {
   "name": "@zeitonline/game-components",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Framework-agnostic web components shared by ZEIT ONLINE games (Angular & SvelteKit).",
   "license": "MIT",
   "repository": {
