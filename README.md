@@ -1,14 +1,15 @@
 # @zeitonline/game-components
 
-Framework-agnostic web components for the UI that ZEIT ONLINE games share, used by both the Angular games (sudoku, wortiger, …) and the SvelteKit games (Wortgeflecht, Spiele CP). Plain JavaScript, no dependencies, themed through the `--z-ds-*` design tokens.
+Framework-agnostic web components for the UI that ZEIT ONLINE games share, used by both the Angular games (sudoku, wortiger, …) and the SvelteKit games (Wortgeflecht, Spiele CP). Written in TypeScript, no runtime dependencies, themed through the `--z-ds-*` design tokens.
 
 See [docs/PLAN.md](docs/PLAN.md) for the plan, integration and trade-offs.
 
 ## Docs and demo site
 
-`demo/` is a SvelteKit app: documentation for every component (playground, anatomy, API, accessibility, tracking), the guides, and the Sudoku ⇄ Wortgeflecht demo. It depends on this package via `file:..`, exactly like a game would, so edits in `src/` show up on reload.
+`demo/` is a SvelteKit app: documentation for every component (playground, anatomy, API, accessibility, tracking), the guides, and the Sudoku ⇄ Wortgeflecht demo. It depends on this package via `file:..`, like a game would, but its Vite config resolves the package's entry points to the TypeScript sources in `src/` instead of `dist/`, so edits show up on reload without a build.
 
 ```sh
+npm install                 # once: TypeScript (also builds dist/)
 npm install --prefix demo   # once
 npm run dev                 # http://localhost:5173            components + guides
                             # http://localhost:5173/games      Sudoku ⇄ Wortgeflecht, fake routes
@@ -36,13 +37,19 @@ npm install "github:zeitonline/web-components-game-library#semver:^0.1.0"
 
 This adds `"@zeitonline/game-components": "github:zeitonline/web-components-game-library#semver:^0.1.0"` to `package.json`, and the lockfile pins the exact commit. Import it as `@zeitonline/game-components`, as shown in [step 3](#3-import-the-components) below.
 
+### Build
+
+The source is TypeScript in `src/`. `npm run build` compiles it with `tsc` into `dist/` (ES2022 modules, `.d.ts` types and source maps), and the package's `exports` point there. `dist/` is not committed: the `prepare` script builds it whenever the package is installed from GitHub, packed (`npm pack`) or installed in this repo (`npm install`). That's why the games' installs must not use `--ignore-scripts`.
+
+`critical.css` is plain CSS and stays at `src/critical.css`.
+
 ### Releases
 
 Releases are made by [release-please](https://github.com/googleapis/release-please). Merging to `main` with [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `feat!:`) opens or updates a release PR. Merging that PR bumps `version` in `package.json`, updates `CHANGELOG.md` and creates the `vX.Y.Z` tag. Commits like `chore:`, `docs:` or `build:` don't trigger a release.
 
 ## Try it locally in a game (without publishing to npm)
 
-The package has no build step: it ships the plain ES modules from `src/`, so it can be packed and installed straight from disk.
+`npm pack` runs the build (see [Build](#build)), so the tarball contains `dist/` and can be installed straight from disk.
 
 Placeholders used below:
 

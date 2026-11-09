@@ -4,7 +4,7 @@ summary: "What is in the package, how to install it in a game and how to run thi
 order: 1
 ---
 
-Framework-agnostic web components for the UI that ZEIT ONLINE games share, used by both the Angular games (sudoku, wortiger, …) and the SvelteKit games (Wortgeflecht, Spiele CP). Plain JavaScript, no dependencies, themed through the `--z-ds-*` design tokens.
+Framework-agnostic web components for the UI that ZEIT ONLINE games share, used by both the Angular games (sudoku, wortiger, …) and the SvelteKit games (Wortgeflecht, Spiele CP). Written in TypeScript, no runtime dependencies, themed through the `--z-ds-*` design tokens.
 
 ## The components
 
@@ -24,7 +24,7 @@ Framework-agnostic web components for the UI that ZEIT ONLINE games share, used 
 
 ## Install
 
-The package has no build step: it ships the plain ES modules from `src/`. Until it is published, pack it and install the tarball in the game.
+The source is TypeScript; the package ships the compiled ES modules and types from `dist/`, which its `prepare` script builds on install. Until it is published, pack it (that runs the build) and install the tarball in the game.
 
 ```sh
 cd <path-to-library>

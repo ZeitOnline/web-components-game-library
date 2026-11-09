@@ -24,7 +24,7 @@ export const COMPONENTS = [button, hero, puzzleList, faq, feedbackButton, naviga
   skeleton: null,
   anatomy: c.parts.length > 0,
   ...c,
-  file: `src/components/${c.tag}.js`,
+  file: `src/components/${c.tag}.ts`,
   importPath: `@zeitonline/game-components/${c.slug}`,
 }));
 

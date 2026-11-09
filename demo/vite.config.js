@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
@@ -5,6 +6,24 @@ import { parse } from 'yaml';
 
 const content = fileURLToPath(new URL('./content/', import.meta.url));
 const plan = fileURLToPath(new URL('../docs/PLAN.md', import.meta.url));
+const library = fileURLToPath(new URL('../', import.meta.url));
+
+/**
+ * The package's `exports` point at the compiled `dist/`. For the docs, resolve every
+ * entry point to its TypeScript source instead (`./dist/x.js` → `src/x.ts`), so edits in
+ * ../src reload the page without a build step, as before.
+ */
+function sourceAliases() {
+  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  return Object.entries(pkg.exports).map(([subpath, target]) => {
+    const file = typeof target === 'string' ? target : target.default;
+    const specifier = pkg.name + subpath.slice(1); // '.' → '', './timer' → '/timer'
+    return {
+      find: new RegExp(`^${specifier.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}$`),
+      replacement: library + file.replace(/^\.\/dist\/(.*)\.js$/, 'src/$1.ts').replace(/^\.\//, ''),
+    };
+  });
+}
 
 /**
  * Dev only: the Markdown content is read on the server, so the browser would not notice a
@@ -40,6 +59,7 @@ function yamlData() {
 
 export default defineConfig({
   plugins: [sveltekit(), reloadOnContentChange(), yamlData()],
+  resolve: { alias: sourceAliases() },
   // The package is linked from one level up (file:..), so Vite may read it,
   // and edits to ../src reload the page like any source file.
   server: { port: 5173, fs: { allow: ['..'] } },

@@ -163,4 +163,4 @@ sheet.replaceSync(`
 }
 `);
 
-export const baseSheet = sheet;
+export const baseSheet: CSSStyleSheet = sheet;

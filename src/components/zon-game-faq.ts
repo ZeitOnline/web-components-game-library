@@ -41,7 +41,14 @@
  *                  (Wortgeflecht's DataTracker.sendGameFaq sends the same, nested in
  *                  event_properties; map it in connectTracking if needed.)
  */
-import { define, escapeHtml } from '../shared/base.js';
+import { define, escapeHtml, upgradeProperty } from '../shared/base.js';
+
+export interface FaqItem {
+  question: string;
+  /** Trusted HTML (links, lists, <strong>). */
+  answer: string;
+  open?: boolean;
+}
 
 let missingCssWarned = false;
 let instances = 0;
@@ -49,7 +56,7 @@ let instances = 0;
 export class ZonGameFaq extends HTMLElement {
   static observedAttributes = ['heading-level', 'exclusive', 'structured-data'];
 
-  #items = null;
+  #items: FaqItem[] | null = null;
   #name = `zon-faq-${++instances}`;
 
   constructor() {
@@ -59,30 +66,27 @@ export class ZonGameFaq extends HTMLElement {
     this.addEventListener('click', (e) => this.#onClick(e));
   }
 
-  connectedCallback() {
-    if (Object.prototype.hasOwnProperty.call(this, 'items')) {
-      const value = this.items;
-      delete this.items;
-      this.items = value;
-    }
+  connectedCallback(): void {
+    upgradeProperty(this, 'items');
     this.#update();
     this.#warnWithoutCss();
   }
 
-  attributeChangedCallback() {
+  attributeChangedCallback(): void {
     if (this.isConnected) this.#update();
   }
 
-  get items() {
+  /** The questions: the ones set here, or else read back from the markup. */
+  get items(): FaqItem[] {
     return this.#items ?? this.#readItems();
   }
-  set items(value) {
+  set items(value: FaqItem[] | null | undefined) {
     this.#items = Array.isArray(value) ? value : null;
     if (this.isConnected) this.#update();
   }
 
   /** The schema.org FAQPage object for the current questions. */
-  get structuredData() {
+  get structuredData(): FaqStructuredData {
     return faqStructuredData(this.items);
   }
 
@@ -96,7 +100,7 @@ export class ZonGameFaq extends HTMLElement {
     this.#writeStructuredData();
   }
 
-  #render(items) {
+  #render(items: FaqItem[]) {
     const level = Math.min(6, Math.max(1, Number(this.getAttribute('heading-level')) || 2));
     this.innerHTML = items
       .map(
@@ -108,25 +112,25 @@ export class ZonGameFaq extends HTMLElement {
       .join('');
   }
 
-  #details() {
-    return [...this.querySelectorAll(':scope > details')];
+  #details(): HTMLDetailsElement[] {
+    return [...this.querySelectorAll<HTMLDetailsElement>(':scope > details')];
   }
 
   /** Reads questions/answers back from author-written markup. */
-  #readItems() {
+  #readItems(): FaqItem[] {
     return this.#details().map((details) => {
       const summary = details.querySelector(':scope > summary');
       const answer = [...details.childNodes].filter((n) => n !== summary);
       const html = answer
-        .map((n) => (n.nodeType === Node.ELEMENT_NODE ? n.outerHTML : n.textContent))
+        .map((n) => (n instanceof Element ? n.outerHTML : (n.textContent ?? '')))
         .join('')
         .trim();
-      return { question: summary?.textContent.trim() ?? '', answer: html, open: details.open };
+      return { question: summary?.textContent?.trim() ?? '', answer: html, open: details.open };
     });
   }
 
   #writeStructuredData() {
-    let script = this.querySelector(':scope > script[data-zon-faq]');
+    let script = this.querySelector<HTMLScriptElement>(':scope > script[data-zon-faq]');
     if (!this.hasAttribute('structured-data')) {
       script?.remove();
       return;
@@ -140,26 +144,26 @@ export class ZonGameFaq extends HTMLElement {
     script.textContent = JSON.stringify(this.structuredData);
   }
 
-  #onToggle(e) {
+  #onToggle(e: Event) {
     const details = e.target;
     if (!(details instanceof HTMLDetailsElement) || details.parentElement !== this) return;
     const index = this.#details().indexOf(details);
-    const question = details.querySelector(':scope > summary')?.textContent.trim() ?? '';
+    const question = details.querySelector(':scope > summary')?.textContent?.trim() ?? '';
     this.#emit('zon-faq-toggle', { index, question, open: details.open });
     if (details.open) this.#track({ action: 'open', target: question });
   }
 
-  #onClick(e) {
-    const link = e.target.closest('a[href]');
+  #onClick(e: Event) {
+    const link = (e.target as Element | null)?.closest?.('a[href]');
     if (!link || !this.contains(link) || link.closest('summary')) return;
-    this.#track({ action: 'click', target: link.getAttribute('href') || link.textContent.trim() });
+    this.#track({ action: 'click', target: link.getAttribute('href') || (link.textContent ?? '').trim() });
   }
 
-  #emit(name, detail) {
+  #emit(name: string, detail: object) {
     this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));
   }
 
-  #track(payload) {
+  #track(payload: Record<string, unknown>) {
     this.#emit('zon-track', { component: this.localName, event: 'game_faq', ...payload });
   }
 
@@ -179,7 +183,13 @@ export class ZonGameFaq extends HTMLElement {
  *   <script type="application/ld+json">${JSON.stringify(faqStructuredData(items))}</script>
  * Google allows basic HTML (links, lists, <strong>, <p>) in the answer text.
  */
-export function faqStructuredData(items = []) {
+export interface FaqStructuredData {
+  '@context': 'https://schema.org';
+  '@type': 'FAQPage';
+  mainEntity: Array<{ '@type': 'Question'; name: string; acceptedAnswer: { '@type': 'Answer'; text: string } }>;
+}
+
+export function faqStructuredData(items: FaqItem[] = []): FaqStructuredData {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -192,3 +202,9 @@ export function faqStructuredData(items = []) {
 }
 
 define('zon-game-faq', ZonGameFaq);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'zon-game-faq': ZonGameFaq;
+  }
+}

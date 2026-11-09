@@ -1,0 +1,33 @@
+name: Check
+on:
+  pull_request:
+  push:
+    branches:
+      - 'main'
+permissions:
+  contents: read
+jobs:
+  build:
+    # Games install this package from GitHub and build it on install (`prepare`),
+    # so a type error here would break their `npm install`.
+    name: Type-check and build
+    runs-on: zon-ubuntu-general-dind
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Install (runs the build via prepare)
+        run: npm ci
+      - name: Check the package contents
+        run: |
+          npm pack --dry-run --json | node -e '
+            const [{ files }] = JSON.parse(require("fs").readFileSync(0, "utf8"));
+            const paths = new Set(files.map((f) => f.path));
+            const exp = require("./package.json").exports;
+            const missing = Object.values(exp)
+              .flatMap((t) => (typeof t === "string" ? [t] : Object.values(t)))
+              .map((p) => p.replace(/^\.\//, ""))
+              .filter((p) => !paths.has(p));
+            if (missing.length) { console.error("Missing from the package:", missing); process.exit(1); }
+            console.log(`All ${Object.keys(exp).length} entry points are in the package.`);'

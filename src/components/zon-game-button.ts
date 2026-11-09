@@ -33,9 +33,12 @@
  *   Native `click` (retargeted to the element). Disabled buttons don't fire it.
  */
 import { ZonElement, css, define, escapeHtml } from '../shared/base.js';
-import { iconTemplates } from '../shared/icons.js';
+import { iconTemplates, isIconName } from '../shared/icons.js';
 
-const VARIANTS = ['primary', 'secondary', 'outline', 'text', 'premium', 'icon'];
+const VARIANTS = ['primary', 'secondary', 'outline', 'text', 'premium', 'icon'] as const;
+export type ButtonVariant = (typeof VARIANTS)[number];
+
+const isVariant = (value: string | null): value is ButtonVariant => VARIANTS.includes(value as ButtonVariant);
 
 const sheet = css`
 :host { display: inline-flex; vertical-align: middle; }
@@ -52,7 +55,7 @@ export class ZonGameButton extends ZonElement {
   static formAssociated = true;
   static observedAttributes = ['variant', 'size', 'icon', 'href', 'target', 'type', 'disabled', 'label'];
 
-  #internals = this.attachInternals?.();
+  #internals: ElementInternals | undefined = this.attachInternals?.();
 
   constructor() {
     super();
@@ -71,23 +74,25 @@ export class ZonGameButton extends ZonElement {
     });
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.#render();
   }
 
-  attributeChangedCallback() {
+  attributeChangedCallback(): void {
     if (this.isConnected) this.#render();
   }
 
   #render() {
-    const variant = VARIANTS.includes(this.getAttribute('variant')) ? this.getAttribute('variant') : 'primary';
+    const requested = this.getAttribute('variant');
+    const variant: ButtonVariant = isVariant(requested) ? requested : 'primary';
     const classes = ['zon-button'];
     if (variant !== 'primary') classes.push(`zon-button--${variant}`);
     if (this.getAttribute('size') === 'small') classes.push('zon-button--small');
     const disabled = this.hasAttribute('disabled');
     const label = this.getAttribute('label');
     const aria = label ? ` aria-label="${escapeHtml(label)}"` : '';
-    const icon = iconTemplates[this.getAttribute('icon')] ?? '';
+    const iconName = this.getAttribute('icon');
+    const icon = isIconName(iconName) ? iconTemplates[iconName] : '';
     // Round button with a ready-made icon: the text inside is its accessible name, not visible.
     const text = variant === 'icon' && icon ? '<span class="sr-only"><slot></slot></span>' : '<slot></slot>';
     const content = `${icon}<slot name="icon"></slot>${text}`;
@@ -106,3 +111,9 @@ export class ZonGameButton extends ZonElement {
 }
 
 define('zon-game-button', ZonGameButton);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'zon-game-button': ZonGameButton;
+  }
+}

@@ -38,7 +38,8 @@
  */
 import { ZonElement, css, define, escapeHtml, formatGameDate } from '../shared/base.js';
 
-const BADGES = { new: 'Neu', continue: 'Weiterspielen', unplayed: 'Ungelöst', solved: 'Gelöst' };
+const BADGES = { new: 'Neu', continue: 'Weiterspielen', unplayed: 'Ungelöst', solved: 'Gelöst' } as const;
+export type HeroState = keyof typeof BADGES;
 
 
 const sheet = css`
@@ -186,7 +187,7 @@ export class ZonGameHero extends ZonElement {
   constructor() {
     super();
     this.root.addEventListener('click', (e) => {
-      const cta = e.target.closest('.cta');
+      const cta = (e.target as Element).closest('.cta');
       if (!cta) return;
       const state = this.#state;
       this.track({ event: 'game_interaction', action: 'click', position: 'header_teaser', target: state });
@@ -199,17 +200,17 @@ export class ZonGameHero extends ZonElement {
     });
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.#render();
   }
 
-  attributeChangedCallback() {
+  attributeChangedCallback(): void {
     if (this.isConnected) this.#render();
   }
 
-  get #state() {
+  get #state(): HeroState {
     const s = this.getAttribute('state');
-    return s in BADGES ? s : 'new';
+    return s !== null && s in BADGES ? (s as HeroState) : 'new';
   }
 
   #render() {
@@ -242,3 +243,9 @@ export class ZonGameHero extends ZonElement {
 }
 
 define('zon-game-hero', ZonGameHero);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'zon-game-hero': ZonGameHero;
+  }
+}
