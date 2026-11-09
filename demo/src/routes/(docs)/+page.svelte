@@ -14,8 +14,8 @@
   <p class="crumb">ZEIT ONLINE · Spiele</p>
   <h1 class="display">Game components</h1>
   <p class="lead">
-    {COMPONENTS.length} framework-agnostic web components for the UI that all ZEIT ONLINE games share. Plain JavaScript,
-    no dependencies, themed by the frame’s <code>--z-ds-*</code> tokens. The same elements run in the Angular games and in
+    {COMPONENTS.length} framework-agnostic web components for the UI that all ZEIT ONLINE games share. Written in TypeScript,
+    no runtime dependencies, themed by the frame’s <code>--z-ds-*</code> tokens. The same elements run in the Angular games and in
     SvelteKit (like this site).
   </p>
   <div class="actions">

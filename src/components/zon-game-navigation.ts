@@ -61,7 +61,35 @@
 import { ZonElement, css, define, escapeHtml } from '../shared/base.js';
 import { iconTemplates as ICONS } from '../shared/icons.js';
 
-const BUILTINS = {
+/** The built-in buttons. */
+export type NavAction = 'back' | 'archive' | 'theme' | 'hint' | 'more';
+
+/** What a handler / custom button's onClick receives. */
+export interface NavContext {
+  /** Built-in action or the custom button's id. */
+  action: string;
+  event: Event;
+  element: HTMLElement;
+  navigation: ZonGameNavigation;
+}
+/** Return false to skip the default action. */
+export type NavHandler = (ctx: NavContext) => unknown;
+export type NavHandlers = Partial<Record<NavAction | (string & {}), NavHandler>>;
+
+export interface NavCustomAction {
+  id: string;
+  label: string;
+  /** Trusted SVG string. */
+  icon?: string;
+  position?: 'start' | 'end';
+  disabled?: boolean;
+  haspopup?: boolean;
+  onClick?: NavHandler;
+}
+
+type Side = 'start' | 'end';
+
+const BUILTINS: Record<NavAction, { label: string; popup?: boolean }> = {
   back: { label: 'Zurück zur Startseite' },
   archive: { label: 'Archiv öffnen', popup: true },
   theme: { label: 'Dunkelmodus' },
@@ -122,7 +150,7 @@ const sheet = css`
 @media print { :host { display: none; } }
 `;
 
-function readScheme() {
+function readScheme(): 'dark' | 'light' {
   const html = document.documentElement.classList;
   if (html.contains('color-scheme-dark')) return 'dark';
   if (html.contains('color-scheme-light')) return 'light';
@@ -137,12 +165,12 @@ export class ZonGameNavigation extends ZonElement {
   static sheet = sheet;
   static observedAttributes = ['heading', 'heading-level', 'start-actions', 'end-actions', 'back-href', 'disabled-actions'];
 
-  #handlers = {};
-  #customActions = [];
-  #mql;
-  #expanded = new Map();
+  #handlers: NavHandlers = {};
+  #customActions: NavCustomAction[] = [];
+  #mql: MediaQueryList | undefined;
+  #expanded = new Map<string, boolean>();
   #onScheme = () => this.#syncTheme();
-  #onDialog = (e) => {
+  #onDialog = (e: Event) => {
     const action = this.#actionForDialog(e.target);
     if (action) this.setExpanded(action, e.type === 'zon-open');
   };
@@ -152,7 +180,7 @@ export class ZonGameNavigation extends ZonElement {
     this.root.addEventListener('click', (e) => this.#onClick(e));
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.upgradeProperty('handlers');
     this.upgradeProperty('customActions');
     addEventListener('colorscheme', this.#onScheme);
@@ -163,58 +191,62 @@ export class ZonGameNavigation extends ZonElement {
     this.#render();
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     removeEventListener('colorscheme', this.#onScheme);
     this.#mql?.removeEventListener('change', this.#onScheme);
     document.removeEventListener('zon-open', this.#onDialog);
     document.removeEventListener('zon-close', this.#onDialog);
   }
 
-  attributeChangedCallback() {
+  attributeChangedCallback(): void {
     if (this.isConnected) this.#render();
   }
 
-  /** @type {Record<string, (ctx: {action: string, event: Event, element: HTMLElement, navigation: ZonGameNavigation}) => unknown>} */
-  get handlers() {
+  /** Callbacks per action. Return false from a handler to skip the default action. */
+  get handlers(): NavHandlers {
     return this.#handlers;
   }
-  set handlers(value) {
+  set handlers(value: NavHandlers | null | undefined) {
     this.#handlers = value && typeof value === 'object' ? value : {};
   }
 
-  get customActions() {
+  get customActions(): NavCustomAction[] {
     return this.#customActions;
   }
-  set customActions(value) {
+  set customActions(value: NavCustomAction[] | null | undefined) {
     this.#customActions = Array.isArray(value) ? value : [];
     if (this.isConnected) this.#render();
   }
 
-  setExpanded(action, expanded) {
+  /** aria-expanded for menus not managed via <action>-dialog. */
+  setExpanded(action: string, expanded: boolean): void {
     this.#expanded.set(action, Boolean(expanded));
     this.root.querySelector(`[data-action="${action}"]`)?.setAttribute('aria-expanded', String(Boolean(expanded)));
   }
 
-  setDisabled(action, disabled) {
+  setDisabled(action: string, disabled: boolean): void {
     const list = new Set((this.getAttribute('disabled-actions') ?? '').split(/\s+/).filter(Boolean));
-    disabled ? list.add(action) : list.delete(action);
+    if (disabled) list.add(action);
+    else list.delete(action);
     this.setAttribute('disabled-actions', [...list].join(' '));
   }
 
-  #actions(side) {
+  #actions(side: Side): NavAction[] {
     const fallback = side === 'start' ? 'back archive' : 'theme more';
-    return (this.getAttribute(`${side}-actions`) ?? fallback).split(/\s+/).filter((a) => a in BUILTINS);
+    return (this.getAttribute(`${side}-actions`) ?? fallback)
+      .split(/\s+/)
+      .filter((a): a is NavAction => a in BUILTINS);
   }
 
-  #actionForDialog(dialog) {
-    if (!dialog?.id) return null;
-    for (const action of Object.keys(BUILTINS)) {
+  #actionForDialog(dialog: EventTarget | null): NavAction | null {
+    if (!(dialog instanceof Element) || !dialog.id) return null;
+    for (const action of Object.keys(BUILTINS) as NavAction[]) {
       if (this.getAttribute(`${action}-dialog`) === dialog.id) return action;
     }
     return null;
   }
 
-  #button(action) {
+  #button(action: NavAction): string {
     const disabled = (this.getAttribute('disabled-actions') ?? '').split(/\s+/).includes(action);
     const label = escapeHtml(this.label(`${action}-label`, BUILTINS[action].label));
     if (action === 'back' && this.hasAttribute('back-href')) {
@@ -233,13 +265,13 @@ export class ZonGameNavigation extends ZonElement {
       aria-label="${label}" ${popup} ${disabled ? 'disabled' : ''}>${ICONS[action]}</button>`;
   }
 
-  #customButton(item, index) {
+  #customButton(item: NavCustomAction, index: number): string {
     const label = escapeHtml(item.label ?? item.id);
     return `<button type="button" class="zon-button zon-button--icon icon-button" part="button button-${escapeHtml(item.id)}" data-custom="${index}"
       aria-label="${label}" ${item.disabled ? 'disabled' : ''} ${item.haspopup ? 'aria-haspopup="dialog" aria-expanded="false"' : ''}>${item.icon ?? ''}</button>`;
   }
 
-  #group(side) {
+  #group(side: Side): string {
     const builtins = this.#actions(side).map((a) => this.#button(a));
     const custom = this.#customActions
       .map((item, i) => ((item.position ?? 'end') === side ? this.#customButton(item, i) : ''))
@@ -263,13 +295,13 @@ export class ZonGameNavigation extends ZonElement {
     button?.setAttribute('aria-checked', String(readScheme() === 'dark'));
   }
 
-  #onClick(event) {
-    const button = event.target.closest('[data-action], [data-custom]');
-    if (!button || button.disabled) return;
+  #onClick(event: Event) {
+    const button = (event.target as Element).closest<HTMLElement>('[data-action], [data-custom]');
+    if (!button || (button as HTMLButtonElement).disabled) return;
 
-    const custom = button.dataset.custom !== undefined ? this.#customActions[Number(button.dataset.custom)] : null;
-    const action = custom ? custom.id : button.dataset.action;
-    const ctx = { action, event, element: button, navigation: this };
+    const custom = button.dataset.custom !== undefined ? (this.#customActions[Number(button.dataset.custom)] ?? null) : null;
+    const action = custom ? custom.id : (button.dataset.action ?? '');
+    const ctx: NavContext = { action, event, element: button, navigation: this };
 
     // 1. callback
     const callback = custom ? custom.onClick : this.handlers?.[action];
@@ -297,7 +329,7 @@ export class ZonGameNavigation extends ZonElement {
       return;
     }
     const dialogId = this.getAttribute(`${action}-dialog`);
-    if (dialogId) document.getElementById(dialogId)?.show?.();
+    if (dialogId) (document.getElementById(dialogId) as (HTMLElement & { show?: () => void }) | null)?.show?.();
   }
 
   /** Same behaviour as sudoku's Frame.toggleDarkMode(). */
@@ -313,3 +345,9 @@ export class ZonGameNavigation extends ZonElement {
 }
 
 define('zon-game-navigation', ZonGameNavigation);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'zon-game-navigation': ZonGameNavigation;
+  }
+}

@@ -32,14 +32,17 @@
 import { ZonElement, css, define } from '../shared/base.js';
 import { icons } from '../shared/icons.js';
 
+/** Why the dialog closed. Other components may pass their own reason, e.g. 'skip'. */
+export type DialogCloseReason = 'button' | 'escape' | 'backdrop' | 'api' | (string & {});
+
 let scrollLocks = 0;
-function lockScroll(lock) {
+function lockScroll(lock: boolean): void {
   scrollLocks = Math.max(0, scrollLocks + (lock ? 1 : -1));
   document.documentElement.style.overflow = scrollLocks ? 'hidden' : '';
 }
 
-function deepActiveElement() {
-  let el = document.activeElement;
+function deepActiveElement(): Element | null {
+  let el: Element | null = document.activeElement;
   while (el?.shadowRoot?.activeElement) el = el.shadowRoot.activeElement;
   return el;
 }
@@ -131,11 +134,11 @@ export class ZonGameDialog extends ZonElement {
   static sheet = sheet;
   static observedAttributes = ['open', 'label', 'close-label'];
 
-  #dialog;
-  #title;
-  #titleSlot;
-  #opener = null;
-  #closeReason = 'api';
+  #dialog: HTMLDialogElement;
+  #title: HTMLElement;
+  #titleSlot: HTMLSlotElement;
+  #opener: Element | null = null;
+  #closeReason: DialogCloseReason = 'api';
 
   constructor() {
     super();
@@ -148,18 +151,18 @@ export class ZonGameDialog extends ZonElement {
           <div class="footer" part="footer"><slot name="footer"></slot></div>
         </div>
       </dialog>`;
-    this.#dialog = this.root.querySelector('dialog');
-    this.#title = this.root.querySelector('.title');
-    this.#titleSlot = this.root.querySelector('slot[name="title"]');
+    this.#dialog = this.root.querySelector('dialog')!;
+    this.#title = this.root.querySelector<HTMLElement>('.title')!;
+    this.#titleSlot = this.root.querySelector<HTMLSlotElement>('slot[name="title"]')!;
 
     // Hide empty title / footer wrappers so they don't add gaps.
-    for (const slot of this.root.querySelectorAll('slot[name]')) {
-      const sync = () => (slot.parentElement.hidden = slot.assignedNodes().length === 0);
+    for (const slot of this.root.querySelectorAll<HTMLSlotElement>('slot[name]')) {
+      const sync = () => (slot.parentElement!.hidden = slot.assignedNodes().length === 0);
       slot.addEventListener('slotchange', sync);
       sync();
     }
 
-    this.root.querySelector('.close').addEventListener('click', () => this.close('button'));
+    this.root.querySelector('.close')!.addEventListener('click', () => this.close('button'));
 
     // Esc: native `cancel` event. Prevent it for persistent dialogs.
     this.#dialog.addEventListener('cancel', (e) => {
@@ -179,19 +182,19 @@ export class ZonGameDialog extends ZonElement {
     this.#dialog.addEventListener('close', () => this.#afterClose());
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.#syncLabels();
     if (this.hasAttribute('open') && !this.#dialog.open) this.#open();
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     if (this.#dialog.open) {
       this.#dialog.close();
       lockScroll(false);
     }
   }
 
-  attributeChangedCallback(name) {
+  attributeChangedCallback(name: string): void {
     if (name === 'open') {
       const want = this.hasAttribute('open');
       if (want && !this.#dialog.open && this.isConnected) this.#open();
@@ -201,24 +204,25 @@ export class ZonGameDialog extends ZonElement {
     this.#syncLabels();
   }
 
-  get open() {
+  /** Reflects the `open` attribute. */
+  get open(): boolean {
     return this.hasAttribute('open');
   }
-  set open(value) {
+  set open(value: boolean) {
     this.toggleAttribute('open', Boolean(value));
   }
 
-  show() {
+  show(): void {
     this.open = true;
   }
 
-  close(reason = 'api') {
+  close(reason: DialogCloseReason = 'api'): void {
     this.#closeReason = reason;
     this.open = false;
   }
 
   #syncLabels() {
-    const close = this.root.querySelector('.close');
+    const close = this.root.querySelector('.close')!;
     close.setAttribute('aria-label', this.label('close-label', 'Dialog schließen'));
     const label = this.getAttribute('label');
     if (label) {
@@ -250,7 +254,7 @@ export class ZonGameDialog extends ZonElement {
 
     const reason = this.#closeReason;
     this.#closeReason = 'api';
-    if (this.#opener?.isConnected) this.#opener.focus();
+    if (this.#opener?.isConnected) (this.#opener as HTMLElement).focus();
     this.#opener = null;
 
     this.emit('zon-close', { reason });
@@ -259,3 +263,9 @@ export class ZonGameDialog extends ZonElement {
 }
 
 define('zon-game-dialog', ZonGameDialog);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'zon-game-dialog': ZonGameDialog;
+  }
+}

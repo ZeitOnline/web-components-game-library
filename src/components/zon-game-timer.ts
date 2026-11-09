@@ -59,12 +59,13 @@ button:focus-visible { outline: 2px solid var(--_focus-100); outline-offset: 2px
 .time.long { width: 54px; }
 `;
 
-export function formatTime(ms) {
+/** 72000 → "01:12", 3723000 → "1:02:03". */
+export function formatTime(ms: number): string {
   const total = Math.floor(ms / 1000);
   const h = Math.floor(total / 3600);
   const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
-  const pad = (n) => String(n).padStart(2, '0');
+  const pad = (n: number) => String(n).padStart(2, '0');
   return h ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
 }
 
@@ -73,11 +74,11 @@ export class ZonGameTimer extends ZonElement {
   static observedAttributes = ['disabled', 'pause-label', 'resume-label'];
 
   #accumulated = 0; // ms counted before the current run
-  #startedAt = null; // performance.now() of the current run, null when paused
-  #timeout = null;
-  #button;
-  #time;
-  #icon;
+  #startedAt: number | null = null; // performance.now() of the current run, null when paused
+  #timeout: ReturnType<typeof setTimeout> | undefined;
+  #button: HTMLButtonElement;
+  #time: HTMLElement;
+  #icon: HTMLElement;
   #onVisibility = () => {
     if (document.hidden && this.running && this.hasAttribute('pause-when-hidden')) this.pause('hidden');
   };
@@ -89,44 +90,45 @@ export class ZonGameTimer extends ZonElement {
         <span class="icon"></span>
         <span class="time" part="time" id="time" role="timer">00:00</span>
       </button>`;
-    this.#button = this.root.querySelector('button');
-    this.#time = this.root.querySelector('.time');
-    this.#icon = this.root.querySelector('.icon');
+    this.#button = this.root.querySelector('button')!;
+    this.#time = this.root.querySelector<HTMLElement>('.time')!;
+    this.#icon = this.root.querySelector<HTMLElement>('.icon')!;
     this.#button.addEventListener('click', () => {
       if (!this.hasAttribute('disabled')) this.toggle('user');
     });
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.upgradeProperty('elapsed');
     document.addEventListener('visibilitychange', this.#onVisibility);
     if (this.hasAttribute('autostart') && !this.running) this.start();
     this.#paint();
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     document.removeEventListener('visibilitychange', this.#onVisibility);
     clearTimeout(this.#timeout);
   }
 
-  attributeChangedCallback() {
+  attributeChangedCallback(): void {
     this.#paint();
   }
 
-  get running() {
+  get running(): boolean {
     return this.#startedAt !== null;
   }
 
-  get elapsed() {
-    return this.#accumulated + (this.running ? performance.now() - this.#startedAt : 0);
+  /** Milliseconds counted so far. Setting it does not change the running state. */
+  get elapsed(): number {
+    return this.#accumulated + (this.#startedAt !== null ? performance.now() - this.#startedAt : 0);
   }
-  set elapsed(ms) {
+  set elapsed(ms: number) {
     this.#accumulated = Math.max(0, Number(ms) || 0);
     if (this.running) this.#startedAt = performance.now();
     this.#paint();
   }
 
-  start() {
+  start(): void {
     if (this.running) return;
     this.#startedAt = performance.now();
     this.#schedule();
@@ -134,7 +136,8 @@ export class ZonGameTimer extends ZonElement {
     this.emit('zon-timer-start', { elapsed: this.elapsed });
   }
 
-  pause(reason = 'api') {
+  /** reason: user | hidden | api */
+  pause(reason: string = 'api'): void {
     if (!this.running) return;
     this.#accumulated = this.elapsed;
     this.#startedAt = null;
@@ -143,11 +146,12 @@ export class ZonGameTimer extends ZonElement {
     this.emit('zon-timer-pause', { elapsed: this.elapsed, reason });
   }
 
-  toggle(reason = 'api') {
-    this.running ? this.pause(reason) : this.start();
+  toggle(reason: string = 'api'): void {
+    if (this.running) this.pause(reason);
+    else this.start();
   }
 
-  reset(ms = 0) {
+  reset(ms = 0): void {
     this.pause();
     this.elapsed = ms;
   }
@@ -185,3 +189,9 @@ export class ZonGameTimer extends ZonElement {
 }
 
 define('zon-game-timer', ZonGameTimer);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'zon-game-timer': ZonGameTimer;
+  }
+}

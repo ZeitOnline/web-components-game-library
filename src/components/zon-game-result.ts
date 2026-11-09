@@ -30,6 +30,19 @@
 import { ZonElement, css, define, escapeHtml } from '../shared/base.js';
 import { icons } from '../shared/icons.js';
 
+export interface ResultStat {
+  label: string;
+  value: string | number;
+  record?: boolean;
+  badge?: string;
+}
+
+/** `method` of the zon-share event. */
+export type ShareMethod = 'native' | 'clipboard' | 'cancelled' | 'failed';
+
+type ResultAction = 'primary' | 'secondary' | 'share';
+const TRACK_TARGETS: Record<ResultAction, string> = { primary: 'next', secondary: 'replay', share: 'share' };
+
 const sheet = css`
 :host {
   display: block;
@@ -102,35 +115,36 @@ export class ZonGameResult extends ZonElement {
     'share-label',
   ];
 
-  #stats = [];
-  #statusTimer;
+  #stats: ResultStat[] = [];
+  #statusTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
     super();
     this.root.addEventListener('click', (e) => this.#onClick(e));
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.upgradeProperty('stats');
     this.#render();
   }
 
-  attributeChangedCallback() {
+  attributeChangedCallback(): void {
     if (this.isConnected) this.#render();
   }
 
-  get stats() {
+  get stats(): ResultStat[] {
     return this.#stats;
   }
-  set stats(value) {
+  set stats(value: ResultStat[] | null | undefined) {
     this.#stats = Array.isArray(value) ? value : [];
     if (this.isConnected) this.#render();
   }
 
-  async share() {
+  /** Native share sheet on touch devices, otherwise copies to the clipboard. Emits zon-share. */
+  async share(): Promise<void> {
     const text = this.getAttribute('share-text') ?? '';
     const url = this.getAttribute('share-url') ?? undefined;
-    let method = 'failed';
+    let method: ShareMethod = 'failed';
     try {
       if (navigator.share && matchMedia('(pointer: coarse)').matches) {
         await navigator.share({ text, url });
@@ -141,12 +155,12 @@ export class ZonGameResult extends ZonElement {
         this.#status(this.label('copied-label', 'In die Zwischenablage kopiert'));
       }
     } catch (err) {
-      method = err?.name === 'AbortError' ? 'cancelled' : 'failed';
+      method = (err as { name?: string } | null)?.name === 'AbortError' ? 'cancelled' : 'failed';
     }
     this.emit('zon-share', { method });
   }
 
-  #status(message) {
+  #status(message: string) {
     const el = this.root.querySelector('.status');
     if (!el) return;
     el.textContent = message;
@@ -154,10 +168,12 @@ export class ZonGameResult extends ZonElement {
     this.#statusTimer = setTimeout(() => (el.textContent = ''), 3000);
   }
 
-  #onClick(e) {
-    const action = e.target.closest('button[data-action]')?.dataset.action;
+  #onClick(e: Event) {
+    const action = (e.target as Element).closest<HTMLElement>('button[data-action]')?.dataset.action as
+      | ResultAction
+      | undefined;
     if (!action) return;
-    const target = { primary: 'next', secondary: 'replay', share: 'share' }[action];
+    const target = TRACK_TARGETS[action];
     this.track({ event: 'game_interaction', action: 'click', target, position: 'closure_screen' });
     if (action === 'share') this.share();
     else this.emit(`zon-${action}`);
@@ -201,3 +217,9 @@ export class ZonGameResult extends ZonElement {
 }
 
 define('zon-game-result', ZonGameResult);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'zon-game-result': ZonGameResult;
+  }
+}

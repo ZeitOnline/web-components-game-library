@@ -31,7 +31,7 @@ Use **framework-agnostic custom elements written in plain JavaScript**, with no 
 
 | Concern | Decision |
 |---|---|
-| Authoring | Vanilla `HTMLElement` subclasses with a tiny base class (`src/shared/base.js`). No Lit/Stencil for now (see §4). |
+| Authoring | Vanilla `HTMLElement` subclasses with a tiny base class (`src/shared/base.ts`), written in TypeScript and compiled with `tsc` to `dist/` (the `prepare` script, so GitHub installs build it). No Lit/Stencil for now (see §4). |
 | Encapsulation | Open Shadow DOM. Styles are shared **constructable stylesheets**, parsed once per page rather than once per instance. |
 | Theming | Only through `--z-ds-*` tokens, with fallbacks copied from sudoku's `root-vars.scss`. Fine-tuning goes through `::part()` and a few `--zon-*` hooks (e.g. `--zon-dialog-max-width`). Fonts are inherited from the frame. |
 | Data in | Primitives go in **attributes**: labels, variant, flags. Arrays and objects go in **properties** (`el.stats = [...]`), which Angular `[stats]` and Svelte `stats={...}` set automatically. Plain HTML / SSR can use a child `<script type="application/json">`. |

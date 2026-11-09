@@ -28,6 +28,16 @@
 import { ZonElement, css, define, escapeHtml } from '../shared/base.js';
 import { icons } from '../shared/icons.js';
 
+/** One step. `description`, `descriptionTwo` and `svg` are trusted HTML from the game repo. */
+export interface InstructionStep {
+  title: string;
+  description?: string;
+  descriptionTwo?: string;
+  svg?: string;
+  image?: string;
+  imageAlt?: string;
+}
+
 const sheet = css`
 :host { display: block; }
 .top { min-height: 44px; display: flex; align-items: center; }
@@ -71,20 +81,20 @@ export class ZonGameInstructions extends ZonElement {
   static sheet = sheet;
   static observedAttributes = ['step', 'prev-label', 'next-label', 'skip-label', 'start-label', 'restart-label'];
 
-  #steps = [];
+  #steps: InstructionStep[] = [];
 
   constructor() {
     super();
     this.root.addEventListener('click', (e) => this.#onClick(e));
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.upgradeProperty('steps');
     if (!this.#steps.length) {
       const script = this.querySelector('script[type="application/json"]');
       if (script) {
         try {
-          this.#steps = JSON.parse(script.textContent);
+          this.#steps = JSON.parse(script.textContent ?? '') as InstructionStep[];
         } catch (err) {
           console.error('<zon-game-instructions>: invalid JSON steps', err);
         }
@@ -93,29 +103,30 @@ export class ZonGameInstructions extends ZonElement {
     this.#render();
   }
 
-  attributeChangedCallback() {
+  attributeChangedCallback(): void {
     if (this.isConnected) this.#render();
   }
 
-  get steps() {
+  get steps(): InstructionStep[] {
     return this.#steps;
   }
-  set steps(value) {
+  set steps(value: InstructionStep[] | null | undefined) {
     this.#steps = Array.isArray(value) ? value : [];
     if (this.step >= this.#steps.length) this.step = 0;
     if (this.isConnected) this.#render();
   }
 
-  get step() {
+  /** Current step index (0-based), reflected as the `step` attribute. */
+  get step(): number {
     const n = Number(this.getAttribute('step') ?? 0);
     return Number.isInteger(n) && n >= 0 ? n : 0;
   }
-  set step(value) {
+  set step(value: number) {
     this.setAttribute('step', String(value));
   }
 
   /** Go to a step. Emits zon-step-change and a tracking event. */
-  goTo(next, action) {
+  goTo(next: number, action?: string): void {
     const previous = this.step;
     const max = this.#steps.length - 1;
     const target = Math.max(0, Math.min(next, max));
@@ -127,12 +138,14 @@ export class ZonGameInstructions extends ZonElement {
   }
 
   /** Re-rendering replaces the buttons; keep keyboard focus on the equivalent control. */
-  #restoreFocus(action, index) {
+  #restoreFocus(action: string | undefined, index: string | undefined) {
     const selector = action === 'dot' ? `[data-index="${index}"]` : `[data-action="${action}"]:not([hidden])`;
-    (this.root.querySelector(selector) ?? this.root.querySelector('.actions .zon-button'))?.focus();
+    (
+      this.root.querySelector<HTMLElement>(selector) ?? this.root.querySelector<HTMLElement>('.actions .zon-button')
+    )?.focus();
   }
 
-  #track(action, step) {
+  #track(action: string, step: number) {
     this.track({
       event: 'game_rules',
       action,
@@ -141,15 +154,15 @@ export class ZonGameInstructions extends ZonElement {
     });
   }
 
-  #finish(type) {
+  #finish(type: 'zon-skip' | 'zon-complete') {
     const step = this.step;
     this.#track(type === 'zon-skip' ? 'skip' : 'close', step);
     const notCancelled = this.emit(type, { step }, { cancelable: true });
     if (notCancelled) this.closest('zon-game-dialog')?.close(type === 'zon-skip' ? 'skip' : 'complete');
   }
 
-  #onClick(e) {
-    const button = e.target.closest('button[data-action]');
+  #onClick(e: Event) {
+    const button = (e.target as Element).closest<HTMLButtonElement>('button[data-action]');
     if (!button) return;
     const { action, index } = button.dataset;
     if (action === 'skip') return this.#finish('zon-skip');
@@ -168,7 +181,7 @@ export class ZonGameInstructions extends ZonElement {
       return;
     }
     const i = Math.min(this.step, steps.length - 1);
-    const s = steps[i];
+    const s = steps[i]!;
     const last = i === steps.length - 1;
     const media = s.svg
       ? `<div class="media" aria-hidden="true">${s.svg}</div>`
@@ -210,3 +223,9 @@ export class ZonGameInstructions extends ZonElement {
 }
 
 define('zon-game-instructions', ZonGameInstructions);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'zon-game-instructions': ZonGameInstructions;
+  }
+}

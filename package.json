@@ -1,79 +1,85 @@
 {
   "name": "@zeitonline/game-components",
   "version": "0.1.1",
-  "description": "Framework-agnostic web components shared by ZEIT ONLINE games (Angular & SvelteKit).",
+  "description": "Framework-agnostic web components shared by ZEIT ONLINE games (Angular & SvelteKit). Written in TypeScript, built to dist/ on install.",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ZeitOnline/web-components-game-library.git"
   },
   "type": "module",
-  "main": "src/index.js",
-  "module": "src/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "exports": {
     ".": {
-      "types": "./src/index.d.ts",
-      "default": "./src/index.js"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./button": {
-      "types": "./src/index.d.ts",
-      "default": "./src/components/zon-game-button.js"
+      "types": "./dist/components/zon-game-button.d.ts",
+      "default": "./dist/components/zon-game-button.js"
     },
     "./dialog": {
-      "types": "./src/index.d.ts",
-      "default": "./src/components/zon-game-dialog.js"
+      "types": "./dist/components/zon-game-dialog.d.ts",
+      "default": "./dist/components/zon-game-dialog.js"
     },
     "./instructions": {
-      "types": "./src/index.d.ts",
-      "default": "./src/components/zon-game-instructions.js"
+      "types": "./dist/components/zon-game-instructions.d.ts",
+      "default": "./dist/components/zon-game-instructions.js"
     },
     "./timer": {
-      "types": "./src/index.d.ts",
-      "default": "./src/components/zon-game-timer.js"
+      "types": "./dist/components/zon-game-timer.d.ts",
+      "default": "./dist/components/zon-game-timer.js"
     },
     "./result": {
-      "types": "./src/index.d.ts",
-      "default": "./src/components/zon-game-result.js"
+      "types": "./dist/components/zon-game-result.d.ts",
+      "default": "./dist/components/zon-game-result.js"
     },
     "./hero": {
-      "types": "./src/index.d.ts",
-      "default": "./src/components/zon-game-hero.js"
+      "types": "./dist/components/zon-game-hero.d.ts",
+      "default": "./dist/components/zon-game-hero.js"
     },
     "./puzzle-list": {
-      "types": "./src/index.d.ts",
-      "default": "./src/components/zon-puzzle-list.js"
+      "types": "./dist/components/zon-puzzle-list.d.ts",
+      "default": "./dist/components/zon-puzzle-list.js"
     },
     "./faq": {
-      "types": "./src/index.d.ts",
-      "default": "./src/components/zon-game-faq.js"
+      "types": "./dist/components/zon-game-faq.d.ts",
+      "default": "./dist/components/zon-game-faq.js"
     },
     "./tracking": {
-      "types": "./src/index.d.ts",
-      "default": "./src/tracking.js"
+      "types": "./dist/tracking.d.ts",
+      "default": "./dist/tracking.js"
     },
     "./navigation": {
-      "types": "./src/index.d.ts",
-      "default": "./src/components/zon-game-navigation.js"
+      "types": "./dist/components/zon-game-navigation.d.ts",
+      "default": "./dist/components/zon-game-navigation.js"
     },
     "./feedback-button": {
-      "types": "./src/index.d.ts",
-      "default": "./src/components/zon-game-feedback-button.js"
+      "types": "./dist/components/zon-game-feedback-button.d.ts",
+      "default": "./dist/components/zon-game-feedback-button.js"
     },
     "./critical.css": "./src/critical.css"
   },
   "files": [
+    "dist",
     "src"
   ],
   "sideEffects": [
-    "./src/components/*.js",
-    "./src/index.js",
+    "./dist/components/*.js",
+    "./dist/index.js",
     "*.css"
   ],
   "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
     "dev": "npm --prefix demo run dev",
     "build:demo": "npm --prefix demo run build",
     "preview:demo": "npm --prefix demo run preview"
   },
   "private": true,
-  "types": "src/index.d.ts"
+  "types": "dist/index.d.ts",
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
 }

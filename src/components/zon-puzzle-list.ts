@@ -31,7 +31,21 @@ import { ZonElement, css, define, escapeHtml, formatGameDate } from '../shared/b
 import { icons, statusBadges } from '../shared/icons.js';
 
 
-const STATUS_TEXT = { concluded: 'Beendet', started: 'Weiterspielen', locked: 'Kostenlos testen im Probeabo' };
+export type PuzzleStatus = 'started' | 'concluded' | 'locked';
+
+export interface PuzzleItem {
+  /** ISO date, shown as "Dienstag, 6. Okt." unless `label` is set. */
+  date: string;
+  href?: string;
+  label?: string;
+  status?: PuzzleStatus;
+}
+
+const STATUS_TEXT: Record<PuzzleStatus, string> = {
+  concluded: 'Beendet',
+  started: 'Weiterspielen',
+  locked: 'Kostenlos testen im Probeabo',
+};
 
 const sheet = css`
 /* 1:1 port of sudoku.zeit.de archive-teaser + teaser (word-length-teaser) styles. */
@@ -177,7 +191,7 @@ export class ZonPuzzleList extends ZonElement {
   static sheet = sheet;
   static observedAttributes = ['heading', 'game-name', 'category', 'all-label', 'all-href', 'columns'];
 
-  #items = [];
+  #items: PuzzleItem[] = [];
   #icon = '';
 
   constructor() {
@@ -185,43 +199,45 @@ export class ZonPuzzleList extends ZonElement {
     this.root.addEventListener('click', (e) => this.#onClick(e));
   }
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.upgradeProperty('items');
     this.upgradeProperty('icon');
     this.#render();
   }
 
-  attributeChangedCallback() {
+  attributeChangedCallback(): void {
     if (this.isConnected) this.#render();
   }
 
-  get items() {
+  get items(): PuzzleItem[] {
     return this.#items;
   }
-  set items(value) {
+  set items(value: PuzzleItem[] | null | undefined) {
     this.#items = Array.isArray(value) ? value : [];
     if (this.isConnected) this.#render();
   }
 
-  get icon() {
+  /** Trusted SVG string for the game icon (36×36). */
+  get icon(): string {
     return this.#icon;
   }
-  set icon(svg) {
+  set icon(svg: string | null | undefined) {
     this.#icon = svg || '';
     if (this.isConnected) this.#render();
   }
 
-  #onClick(e) {
-    const all = e.target.closest('.all');
+  #onClick(e: Event) {
+    const target = e.target as Element;
+    const all = target.closest('.all');
     if (all) {
       this.track({ event: 'game_interaction', action: 'click', position: 'archive', target: 'show_all' });
       if (!this.emit('zon-show-all', { href: this.getAttribute('all-href') }, { cancelable: true })) e.preventDefault();
       return;
     }
-    const row = e.target.closest('.row');
+    const row = target.closest<HTMLElement>('.row');
     if (!row) return;
     const index = Number(row.dataset.index);
-    const item = this.#items[index];
+    const item: PuzzleItem | undefined = this.#items[index];
     this.track({ event: 'game_interaction', action: 'click', position: 'game_cp', target: item?.date });
     if (!this.emit('zon-puzzle-select', { item, index }, { cancelable: true })) e.preventDefault();
   }
@@ -244,8 +260,8 @@ export class ZonPuzzleList extends ZonElement {
     const rowsHtml = items
       .map((item, i) => {
         const title = escapeHtml(item.label ?? formatGameDate(item.date));
-        const status = STATUS_TEXT[item.status];
-        const badge = statusBadges[item.status];
+        const status = item.status ? STATUS_TEXT[item.status] : undefined;
+        const badge = item.status ? statusBadges[item.status] : undefined;
         const tag = item.href ? 'a' : 'button';
         const attrs = item.href ? `href="${escapeHtml(item.href)}"` : 'type="button"';
         return `<li>
@@ -274,3 +290,9 @@ export class ZonPuzzleList extends ZonElement {
 }
 
 define('zon-puzzle-list', ZonPuzzleList);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'zon-puzzle-list': ZonPuzzleList;
+  }
+}

@@ -112,7 +112,7 @@
 
   <section class="section" id="api" aria-labelledby="h-api">
     <h2 id="h-api">API</h2>
-    <p>Also in the doc comment at the top of <code>{c.file}</code> and typed in <code>src/index.d.ts</code>.</p>
+    <p>Also in the doc comment and the types in <code>{c.file}</code>.</p>
     {#each api as [key, label] (key)}
       <h3 id="api-{key}">{label}</h3>
       <div class="panel panel--scroll">
