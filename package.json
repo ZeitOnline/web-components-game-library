@@ -2,6 +2,11 @@
   "name": "@zeitonline/game-components",
   "version": "0.1.0",
   "description": "Framework-agnostic web components shared by ZEIT ONLINE games (Angular & SvelteKit).",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZeitOnline/web-components-game-library.git"
+  },
   "type": "module",
   "main": "src/index.js",
   "module": "src/index.js",
@@ -69,7 +74,6 @@
     "build:demo": "npm --prefix demo run build",
     "preview:demo": "npm --prefix demo run preview"
   },
-  "license": "UNLICENSED",
   "private": true,
   "types": "src/index.d.ts"
 }

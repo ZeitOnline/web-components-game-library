@@ -26,6 +26,20 @@ The games (name, category, subcategory, link, Typeform id, logo and 18×18 mini 
 
 The Markdown can be edited in **Sveltia CMS**, locally for now: `npm run dev`, open `http://localhost:5173/admin/index.html` in Chrome or Edge, choose “Work with Local Repository” and select the repository root. Sveltia writes the files; commit them as usual.
 
+## Install in a game
+
+The package isn't on npm. Games install it straight from GitHub, pinned to a release tag:
+
+```sh
+npm install "github:zeitonline/web-components-game-library#semver:^0.1.0"
+```
+
+This adds `"@zeitonline/game-components": "github:zeitonline/web-components-game-library#semver:^0.1.0"` to `package.json`, and the lockfile pins the exact commit. Import it as `@zeitonline/game-components`, as shown in [step 3](#3-import-the-components) below.
+
+### Releases
+
+Releases are made by [release-please](https://github.com/googleapis/release-please). Merging to `main` with [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `feat!:`) opens or updates a release PR. Merging that PR bumps `version` in `package.json`, updates `CHANGELOG.md` and creates the `vX.Y.Z` tag. Commits like `chore:`, `docs:` or `build:` don't trigger a release.
+
 ## Try it locally in a game (without publishing to npm)
 
 The package has no build step: it ships the plain ES modules from `src/`, so it can be packed and installed straight from disk.
